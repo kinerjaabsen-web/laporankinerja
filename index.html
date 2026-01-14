@@ -24,12 +24,12 @@
         .signature-img { max-height: 80px; mix-blend-mode: multiply; }
         .whitespace-pre-wrap { white-space: pre-wrap; }
         
-        /* Animasi Notifikasi */
+        /* Animasi Berkedip untuk Sisa Waktu Kritis */
+        .blink { animation: blinker 1s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0; } }
+
         .toast-notif { animation: slideIn 0.5s ease-out forwards; }
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -38,7 +38,7 @@
 
     <div id="loginPage" class="flex items-center justify-center min-h-screen no-print px-4">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm border-t-8 border-blue-900">
-            <h1 class="text-3xl font-black text-blue-900 text-center mb-6 italic uppercase">Laporan Kinerja Dinarpus PPPK PW</h1>
+            <h1 class="text-3xl font-black text-blue-900 text-center mb-6 italic uppercase text-center leading-tight">Laporan Kinerja<br>PPPK PW</h1>
             <div class="space-y-4">
                 <select id="userSelect" class="w-full p-3 border rounded-xl outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 font-bold text-sm">
                     <option value="">-- Pilih User --</option>
@@ -79,7 +79,7 @@
 
     <div id="dashboard" class="hidden">
         <nav class="bg-blue-900 text-white p-4 no-print flex justify-between items-center shadow-md">
-            <div class="font-black text-xl italic tracking-tighter uppercase">DINARPUS PPPK PW 2026</div>
+            <div class="font-black text-xl italic tracking-tighter uppercase">DINARPUS PW 2026</div>
             <div class="flex items-center gap-4">
                 <div class="text-right">
                     <p id="displayUser" class="text-xs font-bold"></p>
@@ -90,59 +90,78 @@
         </nav>
 
         <div class="max-w-7xl mx-auto p-4 md:p-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm mb-6 no-print border flex flex-wrap items-end gap-4">
-                <div class="flex-1 min-w-[200px]">
-                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Periode Laporan</label>
-                    <div class="flex gap-2 items-center">
-                        <input type="date" id="filterStart" class="border p-2 rounded-lg bg-slate-50 w-full text-sm">
-                        <span class="text-xs">s/d</span>
-                        <input type="date" id="filterEnd" class="border p-2 rounded-lg bg-slate-50 w-full text-sm">
-                    </div>
+            
+            <div id="timerContainer" class="hidden no-print mb-6 flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border">
+                <div>
+                    <span class="text-[10px] font-black text-slate-400 uppercase block">Status Sistem:</span>
+                    <span id="systemStatus" class="font-bold text-sm">Mengecek Waktu...</span>
                 </div>
-                <button onclick="renderTable()" class="bg-blue-800 text-white px-6 py-2 rounded-lg font-bold text-sm">Tampilkan</button>
-                <button onclick="window.print()" class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-sm">CETAK PDF</button>
+                <div class="text-right">
+                    <span class="text-[10px] font-black text-slate-400 uppercase block italic">Sisa Waktu Input:</span>
+                    <span id="countdownDisplay" class="font-black text-xl tabular-nums">00:00:00</span>
+                </div>
             </div>
 
             <div id="formPegawai" class="hidden bg-white p-6 rounded-2xl shadow-sm mb-6 no-print border-l-8 border-blue-700">
-                <h2 id="formTitle" class="font-bold text-slate-800 mb-1 uppercase text-xs tracking-widest">Tambah Kegiatan</h2>
-                <p class="text-[10px] text-red-600 font-bold mb-4 uppercase italic">* Batas Input: Hari ini maks jam 16.00 WIB</p>
-                <input type="hidden" id="editId">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Tanggal</label>
-                        <input type="date" id="inTgl" class="w-full border p-3 rounded-xl text-sm bg-gray-100 mt-1" readonly>
-                    </div>
-                    <div class="md:col-span-3">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Uraian Kegiatan</label>
-                        <textarea id="inUraian" rows="3" class="w-full border p-3 rounded-xl text-sm bg-slate-50 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                    </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Volume & Satuan</label>
-                        <div class="flex gap-2 mt-1">
-                            <input type="number" id="inJml" placeholder="Jml" class="border p-3 rounded-xl text-sm w-20 bg-slate-50">
-                            <input type="text" id="inSatuan" placeholder="Satuan" class="border p-3 rounded-xl text-sm w-full bg-slate-50">
+                <div id="inputActive">
+                    <h2 id="formTitle" class="font-bold text-slate-800 mb-4 uppercase text-xs tracking-widest flex items-center gap-2">
+                        <span class="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></span> Tambah Kegiatan
+                    </h2>
+                    <input type="hidden" id="editId">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Tanggal</label>
+                            <input type="date" id="inTgl" class="w-full border p-3 rounded-xl text-sm bg-gray-100 mt-1" readonly>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Uraian Kegiatan</label>
+                            <textarea id="inUraian" rows="3" class="w-full border p-3 rounded-xl text-sm bg-slate-50 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Volume & Satuan</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="number" id="inJml" placeholder="Jml" class="border p-3 rounded-xl text-sm w-20 bg-slate-50">
+                                <input type="text" id="inSatuan" placeholder="Satuan" class="border p-3 rounded-xl text-sm w-full bg-slate-50">
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Upload Bukti</label>
+                            <input type="file" id="inBerkas" class="w-full text-xs mt-1 border p-2 rounded-xl bg-slate-50">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="submitLaporan()" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold uppercase hover:bg-black transition shadow-md">Simpan Laporan</button>
                         </div>
                     </div>
-                    <div class="md:col-span-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase">Upload Bukti (Max 5Mb)</label>
-                        <input type="file" id="inBerkas" class="w-full text-xs mt-1 border p-2 rounded-xl bg-slate-50">
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="submitLaporan()" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold uppercase hover:bg-black transition shadow-md">Simpan</button>
-                    </div>
+                </div>
+                <div id="inputLocked" class="hidden text-center py-6 bg-red-50 rounded-xl border-2 border-dashed border-red-200">
+                    <span class="text-3xl mb-2 block">🔒</span>
+                    <h2 class="text-red-600 font-black text-lg uppercase italic">SISTEM TERKUNCI OTOMATIS</h2>
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Batas pengisian jam 16.00 WIB telah berakhir.</p>
                 </div>
             </div>
 
             <div class="bg-white rounded-3xl shadow-xl overflow-hidden border p-4 md:p-8">
+                <div class="no-print flex flex-wrap gap-3 mb-6 items-end border-b pb-6">
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="text-[10px] font-black text-gray-400 uppercase">Periode Mulai</label>
+                        <input type="date" id="filterStart" class="w-full border p-2 rounded-xl text-sm">
+                    </div>
+                    <div class="flex-1 min-w-[150px]">
+                        <label class="text-[10px] font-black text-gray-400 uppercase">Sampai</label>
+                        <input type="date" id="filterEnd" class="w-full border p-2 rounded-xl text-sm">
+                    </div>
+                    <button onclick="renderTable()" class="bg-blue-800 text-white px-6 py-2 rounded-xl font-bold text-sm uppercase">Cari</button>
+                    <button onclick="window.print()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm uppercase italic">Cetak PDF</button>
+                </div>
+
                 <div class="print-only text-center border-b-4 border-double border-black pb-4 mb-8">
-                    <h1 class="text-2xl font-black uppercase">LAPORAN KINERJA HARIAN</h1>
-					<h1 class="text-2xl font-black uppercase">PPPK PARUH WAKTU</h1>
-                    <h2 class="text-lg font-bold uppercase">DINAS KEARSIPAN DAN PERPUSTAKAAN</h2>
+                    <h1 class="text-2xl font-black uppercase">LAPORAN KINERJA HARIAN PPPK PARUH WAKTU</h1>
+                    <h2 class="text-lg font-bold uppercase leading-tight">DINAS KEARSIPAN DAN PERPUSTAKAAN KABUPATEN PURBALINGGA</h2>
                 </div>
 
                 <table class="w-full text-xs text-left border-collapse border">
                     <thead>
-                        <tr class="bg-slate-100 text-slate-600 uppercase font-black border">
+                        <tr class="bg-slate-800 text-white uppercase font-black border">
                             <th class="p-3 border text-center w-10">No</th>
                             <th class="p-2 border">Nama</th>
                             <th class="p-2 border">Tanggal</th>
@@ -156,7 +175,7 @@
                     <tbody id="tableBody"></tbody>
                 </table>
 
-                <div class="print-only signature-wrapper">
+                <div class="print-only signature-wrapper mt-12">
                     <div class="signature-box">
                         
                         <img id="printSignVerif" class="signature-img mx-auto">
@@ -167,9 +186,8 @@
                         <div class="h-16 flex items-center justify-center">
                             <img id="printSignPimpinan" class="signature-img mx-auto">
                         </div>
-                        <p class="font-bold underline uppercase text-sm mt-2">ENDI ASTONO, S.Sos</p>
-						  <p class="text-[10px] font-bold uppercase leading-tight">Pembina Utama Muda <br>NIP.196709191990031010</p>
-						
+                        <p class="font-bold underline uppercase text-sm mt-1">ENDI ASTONO, S.Sos</p>
+                        <p class="text-[10px] font-bold uppercase leading-tight">Pembina Utama Muda <br>NIP. 196709191990031010</p>
                     </div>
                 </div>
             </div>
@@ -178,18 +196,17 @@
 
     <div id="signModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl p-6 w-full max-w-md text-center">
-            <h3 class="text-lg font-bold mb-4 italic uppercase">Goreskan Tanda Tangan</h3>
+            <h3 class="text-lg font-bold mb-4 italic uppercase">Tanda Tangan Digital</h3>
             <canvas id="signature-pad-canvas" width="400" height="200" class="w-full rounded-lg"></canvas>
             <div class="flex gap-2 mt-4">
                 <button onclick="clearSign()" class="bg-gray-100 px-4 py-2 rounded-xl text-xs font-bold uppercase">Ulangi</button>
                 <button onclick="saveSign()" class="bg-blue-800 text-white flex-1 py-2 rounded-xl font-bold uppercase">Simpan TTD</button>
-                <button onclick="closeModal()" class="text-red-500 text-xs px-2 font-bold uppercase">Batal</button>
+                <button onclick="closeModal()" class="text-red-500 text-xs px-2 font-bold uppercase underline">Batal</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: "AIzaSyAi6r89ZlhtZ325z3ypGQhrKUdq-mHXNCs",
             authDomain: "laporankinerja-fa09e.firebaseapp.com",
@@ -202,7 +219,6 @@
         firebase.initializeApp(firebaseConfig);
         const dbRef = firebase.database().ref('dinarpus_db');
 
-        // --- 2. CONFIG USERS ---
         const config = {
             'Murti': { role: 'Verifikator', pass: '12345' },
             'Marliati': { role: 'Verifikator', pass: '12345' },
@@ -234,34 +250,72 @@
             'Ragil': { role: 'Pegawai', verif: 'Itqon', pass: '123' }
         };
 
-        let db = [];
-        let userSess = null;
-        let signPad = null;
-        let activeId = null;
+        let db = [], userSess = null, signPad = null, activeId = null;
 
-        // --- 3. CORE FUNCTIONS ---
         document.addEventListener('DOMContentLoaded', () => {
             signPad = new SignaturePad(document.getElementById('signature-pad-canvas'));
             const saved = localStorage.getItem('dinarpus_session');
-            if (saved) {
-                userSess = JSON.parse(saved);
-                renderDashboard();
-            }
+            if (saved) { userSess = JSON.parse(saved); renderDashboard(); }
+            setInterval(updateCountdown, 1000); // Mulai countdown
         });
 
         function handleLogin() {
             const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('passInput').value;
             if (!user || !config[user] || pass !== config[user].pass) return alert("User/Password Salah!");
-            
             userSess = { name: user, ...config[user] };
             localStorage.setItem('dinarpus_session', JSON.stringify(userSess));
             renderDashboard();
         }
 
-        function handleLogout() {
-            localStorage.removeItem('dinarpus_session');
-            location.reload();
+        function handleLogout() { localStorage.removeItem('dinarpus_session'); location.reload(); }
+
+        // LOGIKA HITUNG MUNDUR (Countdown)
+        function updateCountdown() {
+            if (!userSess) return;
+
+            const now = new Date();
+            const target = new Date();
+            target.setHours(16, 0, 0, 0);
+
+            const diff = target - now;
+            const display = document.getElementById('countdownDisplay');
+            const statusText = document.getElementById('systemStatus');
+            const timerContainer = document.getElementById('timerContainer');
+
+            if (diff <= 0) {
+                display.innerText = "00:00:00";
+                display.className = "font-black text-xl tabular-nums text-red-600";
+                statusText.innerText = "SISTEM TERKUNCI";
+                statusText.className = "font-bold text-sm text-red-600";
+                
+                // Jika sedang login sebagai pegawai, kunci form
+                if(userSess.role === 'Pegawai' && !document.getElementById('inputActive').classList.contains('hidden')) {
+                    renderDashboard(); 
+                }
+                return;
+            }
+
+            timerContainer.classList.remove('hidden');
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+
+            display.innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+            if (h >= 1) {
+                display.className = "font-black text-xl tabular-nums text-emerald-600";
+                statusText.innerText = "SISTEM TERBUKA";
+                statusText.className = "font-bold text-sm text-emerald-600";
+            } else if (m >= 10) {
+                display.className = "font-black text-xl tabular-nums text-orange-500";
+                statusText.innerText = "WAKTU TERBATAS";
+                statusText.className = "font-bold text-sm text-orange-500";
+            } else {
+                display.className = "font-black text-xl tabular-nums text-red-600 blink";
+                statusText.innerText = "SEGERA SIMPAN!";
+                statusText.className = "font-bold text-sm text-red-600";
+            }
         }
 
         function renderDashboard() {
@@ -270,62 +324,53 @@
             document.getElementById('displayUser').innerText = userSess.name;
             document.getElementById('displayRole').innerText = userSess.role;
 
+            const jamSekarang = new Date().getHours();
             if (userSess.role === 'Pegawai') {
                 document.getElementById('formPegawai').classList.remove('hidden');
-                document.getElementById('inTgl').value = new Date().toISOString().split('T')[0];
+                if (jamSekarang >= 16) {
+                    document.getElementById('inputActive').classList.add('hidden');
+                    document.getElementById('inputLocked').classList.remove('hidden');
+                } else {
+                    document.getElementById('inputActive').classList.remove('hidden');
+                    document.getElementById('inputLocked').classList.add('hidden');
+                    document.getElementById('inTgl').value = new Date().toISOString().split('T')[0];
+                }
             }
             muatDataOnline();
             aktifkanNotifRealtime();
         }
 
         function muatDataOnline() {
-            dbRef.on('value', (snap) => {
-                const data = snap.val();
-                db = data ? Object.values(data) : [];
+            dbRef.on('value', snap => {
+                db = snap.val() ? Object.values(snap.val()) : [];
                 renderTable();
             });
         }
 
         function submitLaporan() {
-            // CEK WAKTU (Maksimal Jam 16.00)
-            const skr = new Date();
-            if (skr.getHours() >= 16) return alert("Maaf, sistem sudah terkunci. Batas input adalah Jam 16.00 WIB.");
-
+            if (new Date().getHours() >= 16) return alert("Sistem terkunci!");
             const editId = document.getElementById('editId').value;
             const file = document.getElementById('inBerkas').files[0];
-
-            const executeSave = (imgBase64 = "") => {
+            const executeSave = (img = "") => {
                 const id = editId || Date.now();
-                const currentData = editId ? db.find(x => x.id == editId) : null;
-
+                const cur = editId ? db.find(x => x.id == editId) : null;
                 const data = {
-                    id: id,
-                    user: userSess.name,
-                    verifBy: userSess.verif || '',
+                    id: id, user: userSess.name, verifBy: userSess.verif || '',
                     tgl: document.getElementById('inTgl').value,
                     uraian: document.getElementById('inUraian').value,
                     jml: document.getElementById('inJml').value,
                     satuan: document.getElementById('inSatuan').value,
-                    status: currentData ? currentData.status : 'INPUT',
-                    signV: currentData ? (currentData.signV || '') : '',
-                    signP: currentData ? (currentData.signP || '') : '',
-                    berkas: imgBase64 || (currentData ? currentData.berkas : '')
+                    status: cur ? cur.status : 'INPUT',
+                    signV: cur ? (cur.signV || '') : '',
+                    signP: cur ? (cur.signP || '') : '',
+                    berkas: img || (cur ? cur.berkas : '')
                 };
-
-                dbRef.child(id).set(data).then(() => {
-                    alert("Berhasil Disimpan!");
-                    resetForm();
-                });
+                dbRef.child(id).set(data).then(() => { alert("Tersimpan!"); resetForm(); });
             };
-
             if (file) {
-                if (file.size > 1000000) return alert("File terlalu besar (Maks 10Mb)");
-                const r = new FileReader();
-                r.readAsDataURL(file);
+                const r = new FileReader(); r.readAsDataURL(file);
                 r.onload = () => executeSave(r.result);
-            } else {
-                executeSave();
-            }
+            } else executeSave();
         }
 
         function renderTable() {
@@ -340,94 +385,71 @@
                 const dM = (fStart && fEnd) ? (i.tgl >= fStart && i.tgl <= fEnd) : true;
                 return rM && dM;
             }).sort((a,b) => b.id - a.id).forEach((i, idx) => {
-                const hari = new Date(i.tgl).toLocaleDateString('id-ID', {weekday: 'long'});
-                let aksi = '', signImg = '<span class="text-gray-300 italic">Proses</span>';
-
-                if (i.status === 'VERIFIED') signImg = `<img src="${i.signV}" class="h-10 mx-auto">`;
-                if (i.status === 'FINISHED') signImg = `<img src="${i.signP}" class="h-10 mx-auto">`;
-
+                let sImg = i.status==='INPUT' ? '...' : `<img src="${i.status==='VERIFIED'?i.signV:i.signP}" class="h-10 mx-auto">`;
+                let btn = '';
                 if (userSess.role === 'Pegawai' && i.status === 'INPUT') {
-                    aksi = `<button onclick="editData(${i.id})" class="text-blue-600 font-bold mr-2">Edit</button>
-                            <button onclick="hapusData(${i.id})" class="text-red-600 font-bold">Hapus</button>`;
+                    btn = `<button onclick="editData(${i.id})" class="text-blue-600 font-bold mr-2">Edit</button>
+                           <button onclick="hapusData(${i.id})" class="text-red-600 font-bold">Hapus</button>`;
                 } else if (userSess.role === 'Verifikator' && i.status === 'INPUT') {
-                    aksi = `<button onclick="openSign(${i.id})" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">VERIFIKASI</button>`;
+                    btn = `<button onclick="openSign(${i.id})" class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold">VERIF</button>`;
                 } else if (userSess.role === 'Pimpinan' && i.status === 'VERIFIED') {
-                    aksi = `<button onclick="openSign(${i.id})" class="bg-emerald-600 text-white px-3 py-1 rounded-lg text-[10px] font-bold">TANDA TANGAN</button>`;
+                    btn = `<button onclick="openSign(${i.id})" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold">TTD KADIN</button>`;
                 }
 
                 tbody.innerHTML += `
                     <tr class="border hover:bg-slate-50">
                         <td class="p-3 border text-center">${idx+1}</td>
                         <td class="p-2 border font-bold text-blue-900">${i.user}</td>
-                        <td class="p-2 border">${hari}, ${i.tgl}</td>
-                        <td class="p-2 border whitespace-pre-wrap">${i.uraian}</td>
+                        <td class="p-2 border">${i.tgl}</td>
+                        <td class="p-2 border whitespace-pre-wrap text-[11px]">${i.uraian}</td>
                         <td class="p-2 border text-center font-bold">${i.jml} ${i.satuan}</td>
-                        <td class="p-2 border text-center">${i.berkas ? `<a href="${i.berkas}" download="bukti-${i.id}" class="text-blue-600 underline font-bold">FILE</a>` : '-'}</td>
-                        <td class="p-2 border text-center">${signImg}</td>
-                        <td class="p-2 border text-center no-print">${aksi}</td>
+                        <td class="p-2 border text-center">${i.berkas ? `<a href="${i.berkas}" download class="text-blue-600 font-bold underline">FILE</a>` : '-'}</td>
+                        <td class="p-2 border text-center">${sImg}</td>
+                        <td class="p-2 border text-center no-print">${btn}</td>
                     </tr>`;
+
+                if(i.status !== 'INPUT') {
+                    document.getElementById('printSignVerif').src = i.signV;
+                    document.getElementById('printNameVerif').innerText = 
+                        i.verifBy === 'Murti' ? 'MURTIKOWATI, S.Sos' : 
+                        i.verifBy === 'Marliati' ? 'MARLIATI, S.Sos' : 'M. NUR ITQON, S.T';
+                }
+                if(i.status === 'FINISHED') document.getElementById('printSignPimpinan').src = i.signP;
             });
         }
 
-        // --- 4. SIGNATURE & NOTIF LOGIC ---
-        function openSign(id) { 
-            activeId = id; 
-            document.getElementById('signModal').classList.remove('hidden'); 
-            signPad.clear(); 
-        }
-
+        function openSign(id) { activeId = id; document.getElementById('signModal').classList.remove('hidden'); signPad.clear(); }
+        function closeModal() { document.getElementById('signModal').classList.add('hidden'); }
+        function clearSign() { signPad.clear(); }
         function saveSign() {
-            if (signPad.isEmpty()) return alert("Silakan tanda tangan!");
             const img = signPad.toDataURL();
-            const updates = {};
-
-            if (userSess.role === 'Verifikator') {
-                updates.status = 'VERIFIED';
-                updates.signV = img;
-            } else if (userSess.role === 'Pimpinan') {
-                updates.status = 'FINISHED';
-                updates.signP = img;
-            }
-
-            dbRef.child(activeId).update(updates).then(() => closeModal());
+            const up = userSess.role === 'Verifikator' ? { status:'VERIFIED', signV:img } : { status:'FINISHED', signP:img };
+            dbRef.child(activeId).update(up).then(() => closeModal());
         }
 
         function showToast(nama, uraian) {
             const container = document.getElementById('notifContainer');
             const toast = document.createElement('div');
             toast.className = "toast-notif pointer-events-auto bg-white border-l-4 border-blue-600 shadow-2xl p-4 rounded-xl w-72 mb-3 border flex flex-col";
-            toast.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <span class="text-[10px] font-black text-blue-600 uppercase">Inputan Baru!</span>
-                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-black">✕</button>
-                </div>
-                <p class="text-sm font-bold text-slate-800">${nama}</p>
-                <p class="text-[11px] text-slate-500 truncate">${uraian}</p>
-            `;
+            toast.innerHTML = `<p class="text-[10px] font-black text-blue-600 uppercase">Input Baru!</p><p class="text-sm font-bold">${nama}</p><p class="text-[11px] truncate italic">${uraian}</p>`;
             container.appendChild(toast);
-            setTimeout(() => { if(toast) toast.remove(); }, 8000);
-            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-            audio.play().catch(() => {});
+            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{});
+            setTimeout(() => toast.remove(), 8000);
         }
 
         function aktifkanNotifRealtime() {
             if (userSess.role === 'Verifikator') {
-                let initial = true;
-                dbRef.limitToLast(1).on('child_added', (snap) => {
-                    if (initial) { initial = false; return; }
-                    const d = snap.val();
-                    if (d.verifBy === userSess.name && d.status === 'INPUT') {
-                        showToast(d.user, d.uraian);
-                    }
+                let init = true;
+                dbRef.limitToLast(1).on('child_added', s => {
+                    if (init) { init = false; return; }
+                    const d = s.val();
+                    if (d.verifBy === userSess.name && d.status === 'INPUT') showToast(d.user, d.uraian);
                 });
             }
         }
-
-        // --- 5. HELPERS ---
-        function closeModal() { document.getElementById('signModal').classList.add('hidden'); }
-        function clearSign() { signPad.clear(); }
-        function hapusData(id) { if(confirm("Hapus data ini?")) dbRef.child(id).remove(); }
+        function hapusData(id) { if(confirm("Hapus?")) dbRef.child(id).remove(); }
         function editData(id) {
+            if (new Date().getHours() >= 16) return alert("Sistem terkunci.");
             const item = db.find(x => x.id == id);
             document.getElementById('editId').value = item.id;
             document.getElementById('inUraian').value = item.uraian;
@@ -447,5 +469,3 @@
     </script>
 </body>
 </html>
-
-
