@@ -35,32 +35,32 @@
                 <select id="userSelect" class="w-full p-3 border rounded-xl outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 font-bold text-sm">
                     <option value="">-- Pilih User --</option>
                     <option value="Saeful">Saeful (Pegawai)</option>
-                    <option value="Fuad">Fuad(Pegawai)</option>
+                    <option value="Fuad">Fuad (Pegawai)</option>
                     <option value="Lusi">Lusi (Pegawai)</option>
                     <option value="Dadi">Dadi (Pegawai)</option>
                     <option value="Widhi">Widhi (Pegawai)</option>
                     <option value="Eni">Eni (Pegawai)</option>
-                    <option value="Della">Della(Pegawai)</option>
-                    <option value="Arya">Arya(Pegawai)</option>
-                    <option value="Aji">Ragil Aji (Pegawai)</option>
-                    <option value="ParSono">ParSono(Pegawai)</option>
+                    <option value="Della">Della (Pegawai)</option>
+                    <option value="Arya">Arya (Pegawai)</option>
+                    <option value="Ragil">Ragil Aji (Pegawai)</option>
+                    <option value="Parsono">Parsono (Pegawai)</option>
                     <option value="Agus">Agus (Pegawai)</option>
                     <option value="Mijil">Mijil (Pegawai)</option>
                     <option value="Dirin">Dirin (Pegawai)</option>
                     <option value="Toro">Toro (Pegawai)</option>
-                    <option value="Ana">Ana(Pegawai)</option>
+                    <option value="Ana">Ana (Pegawai)</option>
                     <option value="Mei">Mei (Pegawai)</option>
                     <option value="Okta">Okta (Pegawai)</option>
-                    <option value="Bella">Bella(Pegawai)</option>
+                    <option value="Bella">Bella (Pegawai)</option>
                     <option value="Arfan">Arfan (Pegawai)</option>
-                    <option value="Didid ">Didid (Pegawai)</option>
-                    <option value="Lia">Lia(Pegawai)</option>
-                    <option value="Riono">Riono(Pegawai)</option>
-                    <option value="Hari">Hari(Pegawai)</option>
+                    <option value="Didid">Didid (Pegawai)</option>
+                    <option value="Lia">Lia (Pegawai)</option>
+                    <option value="Riono">Riono (Pegawai)</option>
+                    <option value="Hari">Hari (Pegawai)</option>
                     <option value="Murti">Murtikowati (Verifikator)</option>
                     <option value="Itqon">M.Nur Itqon (Verifikator)</option>
                     <option value="Marliati">Marliati (Verifikator)</option>
-                    <option value="Kepala">Endi Astono ( Kepala Dinas )</option>
+                    <option value="Kepala">Endi Astono (Kepala Dinas)</option>
                 </select>
                 <input type="password" id="passInput" placeholder="Password" class="w-full p-3 border rounded-xl outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 text-sm">
                 <button onclick="handleLogin()" class="w-full bg-blue-900 text-white font-bold py-3 rounded-xl hover:bg-black transition shadow-lg tracking-widest">LOGIN</button>
@@ -88,7 +88,7 @@
                     <p id="displayUser" class="text-xs font-bold"></p>
                     <p id="displayRole" class="text-[10px] text-blue-300 uppercase font-black"></p>
                 </div>
-                <button onclick="location.reload()" class="bg-red-500 p-2 rounded-lg text-[10px] font-bold">LOGOUT</button>
+                <button onclick="handleLogout()" class="bg-red-500 p-2 rounded-lg text-[10px] font-bold">LOGOUT</button>
             </div>
         </nav>
 
@@ -181,46 +181,36 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURATION FIREBASE ---
+        // --- 1. FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAi6r89ZlhtZ325z3ypGQhrKUdq-mHXNCs",
-  authDomain: "laporankinerja-fa09e.firebaseapp.com",
-  databaseURL: "https://laporankinerja-fa09e-default-rtdb.firebaseio.com",
-  projectId: "laporankinerja-fa09e",
-  storageBucket: "laporankinerja-fa09e.firebasestorage.app",
-  messagingSenderId: "1034616765062",
-  appId: "1:1034616765062:web:ad66fa6c34dfadcec52f07",
-  measurementId: "G-YXG0ENG8PQ"
+            authDomain: "laporankinerja-fa09e.firebaseapp.com",
+            databaseURL: "https://laporankinerja-fa09e-default-rtdb.firebaseio.com",
+            projectId: "laporankinerja-fa09e",
+            storageBucket: "laporankinerja-fa09e.firebasestorage.app",
+            messagingSenderId: "1034616765062",
+            appId: "1:1034616765062:web:ad66fa6c34dfadcec52f07",
+            measurementId: "G-YXG0ENG8PQ"
         };
-
         firebase.initializeApp(firebaseConfig);
         const dbRef = firebase.database().ref('dinarpus_db');
 
-        // --- 2. CONFIGURATION USERS ---
+        // --- 2. CONFIG USERS (SINKRON DENGAN DROPDOWN) ---
         const config = {
-           // Kelompok Verifikator & Pimpinan
             'Murti': { role: 'Verifikator', pass: '12345' },
             'Marliati': { role: 'Verifikator', pass: '12345' },
             'Itqon': { role: 'Verifikator', pass: '12345' },
             'Kepala': { role: 'Pimpinan', pass: '123456' },
-
-            // Kelompok Pegawai - Verifikator: Murti
-            'Saeful': { role: 'Pegawai', verif: 'Murti', pass: '1234' },
+            'Saeful': { role: 'Pegawai', verif: 'Murti', pass: '123' },
             'Fuad': { role: 'Pegawai', verif: 'Murti', pass: '123' },
             'Lusi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
             'Dadi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
             'Widhi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
             'Eni': { role: 'Pegawai', verif: 'Murti', pass: '123' },
-
-            // Kelompok Pegawai - Verifikator: Marliati
             'Arya': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
             'Della': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
             'Novi': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
             'Parsono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-            'Riono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-            'Hari': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-'Aji': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-            // Kelompok Pegawai - Verifikator: Itqon
             'Agus': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
             'Mijil': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
             'Dirin': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
@@ -231,37 +221,57 @@
             'Bella': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
             'Arfan': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
             'Didid': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-            'Lia': { role: 'Pegawai', verif: 'Itqon', pass: '123' }
-            
+            'Lia': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Riono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Hari': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Ragil': { role: 'Pegawai', verif: 'Itqon', pass: '123' }
         };
-            // Tambahkan user lain di sini...
-       
 
-        let db = []; // Akan diisi dari Firebase
+        let db = [];
         let userSess = null;
         let signPad = null;
         let activeId = null;
 
+        // --- 3. LOGIKA SESSION (ANTI-REFRESH) ---
         document.addEventListener('DOMContentLoaded', () => {
             const canvas = document.getElementById('signature-pad-canvas');
             signPad = new SignaturePad(canvas);
+
+            const savedSess = localStorage.getItem('dinarpus_sess');
+            if (savedSess) {
+                userSess = JSON.parse(savedSess);
+                showDashboard();
+            }
         });
 
         function handleLogin() {
             const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('passInput').value;
-            if(!user || pass !== config[user].pass) return alert("User/Password Salah!");
+            
+            if(!user || !config[user] || pass !== config[user].pass) {
+                return alert("User/Password Salah!");
+            }
 
             userSess = { name: user, ...config[user] };
+            localStorage.setItem('dinarpus_sess', JSON.stringify(userSess));
+            showDashboard();
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('dinarpus_sess');
+            location.reload();
+        }
+
+        function showDashboard() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('displayUser').innerText = userSess.name;
             document.getElementById('displayRole').innerText = userSess.role;
             
-            if(userSess.role === 'Pegawai') document.getElementById('formPegawai').classList.remove('hidden');
-            addLog(`Login: ${userSess.name} masuk.`);
-            
-            // AKTIFKAN LISTENER ONLINE
+            if(userSess.role === 'Pegawai') {
+                document.getElementById('formPegawai').classList.remove('hidden');
+            }
+            addLog(`Login: ${userSess.name} aktif.`);
             muatDataOnline();
         }
 
@@ -270,7 +280,6 @@
                 const data = snapshot.val();
                 db = data ? Object.values(data) : [];
                 renderTable();
-                addLog("Database tersinkronisasi.");
             });
         }
 
@@ -284,7 +293,7 @@
                 const data = {
                     id: id,
                     user: userSess.name,
-                    verifBy: userSess.verif,
+                    verifBy: userSess.verif || '',
                     tgl: document.getElementById('inTgl').value,
                     uraian: document.getElementById('inUraian').value,
                     jml: document.getElementById('inJml').value,
@@ -297,22 +306,18 @@
                 if(fileData) data.berkas = fileData;
                 else if(editId) data.berkas = db.find(x => x.id == editId).berkas || '';
 
-                // SIMPAN KE FIREBASE
                 dbRef.child(id).set(data).then(() => {
-                    alert("Data Berhasil Disimpan Online!");
+                    alert("Berhasil disimpan!");
                     resetForm();
                 });
             };
 
-             if (file) {
-                // VALIDASI 5MB (5.000.000 byte)
-                if(file.size > 5000000) return alert("File terlalu besar! Maksimal 5MB.");
+            if (file) {
+                if(file.size > 5000000) return alert("Maks 5MB!");
                 const r = new FileReader();
                 r.readAsDataURL(file);
                 r.onload = () => executeSave(r.result);
-            } else {
-                executeSave();
-            }
+            } else { executeSave(); }
         }
 
         function openSign(id) { 
@@ -323,8 +328,6 @@
 
         function saveSign() {
             const img = signPad.toDataURL();
-            const target = db.find(i => i.id == activeId);
-            
             if(userSess.role === 'Verifikator') {
                 dbRef.child(activeId).update({ status: 'VERIFIED', signV: img });
             } else if(userSess.role === 'Pimpinan') {
@@ -338,8 +341,6 @@
             const fStart = document.getElementById('filterStart').value;
             const fEnd = document.getElementById('filterEnd').value;
             tbody.innerHTML = '';
-            
-            if(fStart && fEnd) document.getElementById('printRange').innerText = `Periode: ${fStart} s.d ${fEnd}`;
 
             db.filter(i => {
                 const rM = (userSess.role === 'Pegawai') ? (i.user === userSess.name) : 
@@ -378,12 +379,8 @@
             });
         }
 
-        function hapusData(id) {
-            if(confirm("Hapus data permanen?")) {
-                dbRef.child(id).remove();
-            }
-        }
-
+        function hapusData(id) { if(confirm("Hapus?")) dbRef.child(id).remove(); }
+        
         function editData(id) {
             const item = db.find(i => i.id == id);
             document.getElementById('editId').value = item.id;
@@ -414,13 +411,8 @@
         function clearSign() { signPad.clear(); }
         function addLog(m) {
             const b = document.getElementById('logBox');
-            b.innerHTML += `<div>[${new Date().toLocaleTimeString()}] > ${m}</div>`;
-            b.scrollTop = b.scrollHeight;
+            if(b) b.innerHTML += `<div>[${new Date().toLocaleTimeString()}] > ${m}</div>`;
         }
     </script>
 </body>
 </html>
-
-
-
-
