@@ -297,7 +297,8 @@
             };
 
             if (file) {
-                if(file.size > 5000000) return alert("File terlalu besar! Max 5Mb.");
+                // VALIDASI 5MB (5.000.000 byte)
+                if(file.size > 5000000) return alert("File terlalu besar! Maksimal 5MB.");
                 const r = new FileReader();
                 r.readAsDataURL(file);
                 r.onload = () => executeSave(r.result);
@@ -419,3 +420,4 @@
 </body>
 
 </html>
+
