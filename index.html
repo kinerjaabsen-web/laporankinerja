@@ -42,7 +42,7 @@
                     <option value="Eni">Eni (Pegawai)</option>
                     <option value="Della">Della(Pegawai)</option>
                     <option value="Arya">Arya(Pegawai)</option>
-                    <option value="Ragil">Ragil Aji (Pegawai)</option>
+                    <option value="Aji">Ragil Aji (Pegawai)</option>
                     <option value="ParSono">ParSono(Pegawai)</option>
                     <option value="Agus">Agus (Pegawai)</option>
                     <option value="Mijil">Mijil (Pegawai)</option>
@@ -198,37 +198,44 @@
 
         // --- 2. CONFIGURATION USERS ---
         const config = {
-            'Saeful': { role: 'Pegawai', verif: 'Murti', pass: '123' },
-            'Fuad': { role: 'Pegawai', verif: 'Murti', pass: '123' },
-             'Widhi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
-            'Lusi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+           // Kelompok Verifikator & Pimpinan
             'Murti': { role: 'Verifikator', pass: '12345' },
             'Marliati': { role: 'Verifikator', pass: '12345' },
             'Itqon': { role: 'Verifikator', pass: '12345' },
-            'Kepala': { role: 'Pimpinan', pass: '123456' }
-                
-       
-        
+            'Kepala': { role: 'Pimpinan', pass: '123456' },
+
+            // Kelompok Pegawai - Verifikator: Murti
+            'Saeful': { role: 'Pegawai', verif: 'Murti', pass: '1234' },
+            'Fuad': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Lusi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Dadi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Widhi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Eni': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+
+            // Kelompok Pegawai - Verifikator: Marliati
             'Arya': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-			'Della': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-			'Novi': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-			'Parsono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-        
-        'Agus': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-				'Mijil': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-				'Dirin': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-				'Toro': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Ana': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Mei': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Okta': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Bella': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Arfan': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Didid': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Lia': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
-			'Riono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-			'Hari': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
-            // Tambahkan user lain di sini...
+            'Della': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Novi': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Parsono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Riono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Hari': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+'Aji': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            // Kelompok Pegawai - Verifikator: Itqon
+            'Agus': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Mijil': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Dirin': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Toro': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Ana': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Mei': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Okta': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Bella': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Arfan': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Didid': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+            'Lia': { role: 'Pegawai', verif: 'Itqon', pass: '123' }
+            
         };
+            // Tambahkan user lain di sini...
+       
 
         let db = []; // Akan diisi dari Firebase
         let userSess = null;
@@ -413,6 +420,7 @@
     </script>
 </body>
 </html>
+
 
 
 
