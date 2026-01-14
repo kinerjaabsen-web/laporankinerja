@@ -297,7 +297,7 @@
             };
 
             if (file) {
-                if(file.size > 1000000) return alert("File terlalu besar! Max 1Mb.");
+                if(file.size > 5000000) return alert("File terlalu besar! Max 5Mb.");
                 const r = new FileReader();
                 r.readAsDataURL(file);
                 r.onload = () => executeSave(r.result);
@@ -417,4 +417,5 @@
         }
     </script>
 </body>
+
 </html>
