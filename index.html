@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DINARPUS - Sistem Laporan Kinerja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; padding: 0; margin: 0; }
+            .signature-wrapper { display: flex !important; flex-direction: row !important; justify-content: space-between !important; margin-top: 50px; }
+            .signature-box { width: 45% !important; text-align: center; }
+            table { width: 100% !important; border-collapse: collapse; table-layout: fixed; }
+            th, td { border: 1px solid black !important; padding: 8px !important; word-wrap: break-word; }
+        }
+        .print-only { display: none; }
+        #signature-pad-canvas { border: 2px dashed #cbd5e1; background: #f8fafc; cursor: crosshair; }
+        .signature-img { max-height: 80px; mix-blend-mode: multiply; }
+        /* Membuat tampilan teks uraian menjaga format baris baru */
+        .whitespace-pre-wrap { white-space: pre-wrap; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+    <div id="loginPage" class="flex items-center justify-center min-h-screen no-print px-4">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm border-t-8 border-blue-900">
+            <h1 class="text-3xl font-black text-blue-900 text-center mb-6 italic">LAPORAN KINERJA PPPK PW DINARPUS</h1>
+            <div class="space-y-4">
+                <select id="userSelect" class="w-full p-3 border rounded-xl outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 font-bold text-sm">
+                    <option value="">-- Pilih User --</option>
+                    <option value="Saeful">Saeful (Pegawai)</option>
+                    <option value="Fuad">Fuad(Pegawai)</option>
+                    <option value="Lusi">Lusi (Pegawai)</option>
+					 <option value="Dadi">Dadi (Pegawai)</option>
+                    <option value="Widhi">Widhi (Pegawai)</option>
+                    <option value="Eni">Eni (Pegawai)</option>
+					 <option value="Della">Della(Pegawai)</option>
+                    <option value="Arya">Arya(Pegawai)</option>
+                    <option value="Ragil">Ragil Aji (Pegawai)</option>
+					 <option value="ParSono">ParSono(Pegawai)</option>
+                    <option value="Agus">Agus (Pegawai)</option>
+                    <option value="Mijil">Mijil (Pegawai)</option>
+					 <option value="Dirin">Dirin (Pegawai)</option>
+                    <option value="Toro">Toro (Pegawai)</option>
+                    <option value="Ana">Ana(Pegawai)</option>
+					 <option value="Mei">Mei (Pegawai)</option>
+                    <option value="Okta">Okta (Pegawai)</option>
+                    <option value="Bella">Bella(Pegawai)</option>
+					 <option value="Arfan">Arfan (Pegawai)</option>
+                    <option value="Didid ">Didid (Pegawai)</option>
+                    <option value="Lia">Lia(Pegawai)</option>
+					 <option value="Riono">Riono(Pegawai)</option>
+                    <option value="Hari">Hari(Pegawai)</option>
+                    <option value="Murti">Murtikowati (Verifikator)</option>
+                    <option value="Itqon">M.Nur Itqon (Verifikator)</option>
+                    <option value="Marliati">Marliati (Verifikator)</option>
+                    <option value="Kepala">Endi Astono ( Kepala Dinas )</option>
+                </select>
+                <input type="password" id="passInput" placeholder="Password (12345)" class="w-full p-3 border rounded-xl outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 text-sm">
+                <button onclick="handleLogin()" class="w-full bg-blue-900 text-white font-bold py-3 rounded-xl hover:bg-black transition shadow-lg tracking-widest">LOGIN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="signModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl text-center">
+            <h3 class="text-lg font-bold mb-4">Tanda Tangan Digital</h3>
+            <canvas id="signature-pad-canvas" width="400" height="200" class="w-full rounded-lg"></canvas>
+            <div class="flex gap-2 mt-4">
+                <button onclick="clearSign()" class="bg-gray-100 px-4 py-2 rounded-xl text-xs font-bold uppercase">Ulangi</button>
+                <button onclick="saveSign()" class="bg-blue-800 text-white flex-1 py-2 rounded-xl font-bold uppercase">Simpan</button>
+                <button onclick="closeModal()" class="text-red-500 text-xs px-2">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboard" class="hidden">
+        <nav class="bg-blue-900 text-white p-4 no-print flex justify-between items-center shadow-md">
+            <div class="font-black text-xl italic tracking-tighter uppercase">LAPORAN KINERJA PPPK PW DINARPUS 2026</div>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p id="displayUser" class="text-xs font-bold"></p>
+                    <p id="displayRole" class="text-[10px] text-blue-300 uppercase font-black"></p>
+                </div>
+                <button onclick="location.reload()" class="bg-red-500 p-2 rounded-lg text-[10px] font-bold">LOGOUT</button>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto p-4 md:p-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm mb-6 no-print border flex flex-wrap items-end gap-4">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Periode Laporan</label>
+                    <div class="flex gap-2 items-center">
+                        <input type="date" id="filterStart" class="border p-2 rounded-lg bg-slate-50 w-full text-sm">
+                        <span class="text-xs">s/d</span>
+                        <input type="date" id="filterEnd" class="border p-2 rounded-lg bg-slate-50 w-full text-sm">
+                    </div>
+                </div>
+                <button onclick="renderTable()" class="bg-blue-800 text-white px-6 py-2 rounded-lg font-bold text-sm shadow-md">Tampilkan</button>
+                <button onclick="window.print()" class="bg-emerald-600 text-white px-6 py-2 rounded-lg font-bold text-sm shadow-md">CETAK PDF</button>
+            </div>
+
+            <div id="formPegawai" class="hidden bg-white p-6 rounded-2xl shadow-sm mb-6 no-print border-l-8 border-blue-700">
+                <h2 id="formTitle" class="font-bold text-slate-800 mb-4 uppercase text-xs tracking-widest">Tambah Kegiatan</h2>
+                <input type="hidden" id="editId">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="md:col-span-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Tanggal</label>
+                        <input type="date" id="inTgl" class="w-full border p-3 rounded-xl text-sm bg-slate-50 mt-1">
+                    </div>
+                    <div class="md:col-span-3">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Uraian Kegiatan (Bisa Enter)</label>
+                        <textarea id="inUraian" rows="3" placeholder="Contoh: &#10;1. Melakukan pengarsipan surat masuk&#10;2. Penataan rak buku blok A" class="w-full border p-3 rounded-xl text-sm bg-slate-50 mt-1 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Volume & Satuan</label>
+                        <div class="flex gap-2 mt-1">
+                            <input type="number" id="inJml" placeholder="Jml" class="border p-3 rounded-xl text-sm w-20 bg-slate-50">
+                            <input type="text" id="inSatuan" placeholder="Satuan" class="border p-3 rounded-xl text-sm w-full bg-slate-50">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase">Upload Bukti (Max 1Mb)</label>
+                        <input type="file" id="inBerkas" class="w-full text-xs mt-1 border p-2 rounded-xl bg-slate-50">
+                    </div>
+                    <div class="md:col-span-1 flex items-end">
+                        <button id="btnSimpan" onclick="submitLaporan()" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-black transition shadow-md">Simpan</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border p-4 md:p-8">
+                <div class="print-only text-center border-b-4 border-double border-black pb-4 mb-8">
+                    <h1 class="text-2xl font-black uppercase">LAPORAN KINERJA HARIAN </h1>
+                    <h2 class="text-lg font-bold uppercase">PEGAWAI PEMERINTAH DENGAN PERJANJIAN KERJA PARUH WAKTU</h2>
+					 <h2 class="text-lg font-bold uppercase">DINAS KEARSIPAN DAN PERPUSTAKAAN </h2>
+                    <p id="printRange" class="text-sm italic mt-2"></p>
+                </div>
+
+                <table class="w-full text-xs text-left border-collapse border">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-600 uppercase font-black border">
+                            <th class="p-3 border text-center w-10">No</th>
+                           
+							<th class="p-2 border w-24">Nama Pegawai</th> <th class="p-2 border w-24">Hari/Tgl</th>
+                            <th class="p-3 border">Uraian Kegiatan</th>
+                            <th class="p-3 border text-center w-20">Jumlah dan Satuan</th>
+                            <th class="p-3 border text-center w-24">Bukti</th>
+                            <th class="p-3 border text-center w-32">Verifikasi</th>
+                            <th class="p-3 border text-center no-print w-32">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+
+                <div class="print-only signature-wrapper">
+                    <div class="signature-box">
+                        <p class="text-xs mb-16 font-bold uppercase">Verifikator Atasan,</p>
+                        <img id="printSignVerif" class="signature-img mx-auto">
+                        <p id="printNameVerif" class="font-bold underline uppercase text-sm mt-2"></p>
+                    </div>
+                    <div class="signature-box">
+                        <p class="text-xs mb-16 font-bold uppercase">Mengesahkan,</p>
+                        <img id="printSignPimpinan" class="signature-img mx-auto">
+                        <p class="font-bold underline uppercase text-sm mt-2">ENDI ASTONO, S.Sos</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-8 no-print border-t pt-6">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2 italic">Tracking Log</p>
+                <div id="logBox" class="bg-slate-900 text-emerald-500 p-4 rounded-xl text-[10px] font-mono h-24 overflow-y-auto shadow-inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const config = {
+		//arsip
+            'Saeful': { role: 'Pegawai', verif: 'Murti', pass: '123456' },
+			'Fuad': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+			
+            'Lusi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Dadi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+			'Widhi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Eni': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+			
+			//sekretariat
+			'Arya': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+			'Della': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+			'Novi': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+			'Parsono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+			//perpus
+			'Agus': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+				'Mijil': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+				'Dirin': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+				'Toro': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Ana': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Mei': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Okta': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Bella': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Arfan': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Didid': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Lia': { role: 'Pegawai', verif: 'Itqon', pass: '123' },
+			'Riono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+			'Hari': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+			
+            'Murti': { role: 'Verifikator', bawahan: 'Saeful', pass: '12345' },
+			 'Murti': { role: 'Verifikator', bawahan: 'Fuad', pass: '12345' },
+			 'Murti': { role: 'Verifikator', bawahan: 'Lusi', pass: '12345' },
+			 'Murti': { role: 'Verifikator', bawahan: 'Eni', pass: '12345' },
+			 'Murti': { role: 'Verifikator', bawahan: 'Dadi', pass: '12345' },
+			 'Murti': { role: 'Verifikator', bawahan: 'Widhy', pass: '12345' },
+			
+			'Marliati': { role: 'Verifikator', bawahan: 'Arya', pass: '12345' },
+			'Marliati': { role: 'Verifikator', bawahan: 'Novi', pass: '12345' },
+			'Marliati': { role: 'Verifikator', bawahan: 'Della', pass: '12345' },
+			'Marliati': { role: 'Verifikator', bawahan: 'Parsono', pass: '12345' },
+			'Marliati': { role: 'Verifikator', bawahan: 'Riono', pass: '12345' },
+			'Marliati': { role: 'Verifikator', bawahan: 'Hari', pass: '12345' },
+			
+			
+            'Itqon': { role: 'Verifikator', bawahan: 'Agus', pass: '12345' },
+			'Itqon': { role: 'Verifikator', bawahan: 'Mijil', pass: '12345' },
+			'Itqon': { role: 'Verifikator', bawahan: 'Dirin', pass: '12345' },
+			'Itqon': { role: 'Verifikator', bawahan: 'Toro', pass: '12345' },
+			'Itqon': { role: 'Verifikator', bawahan: 'Ana', pass: '12345' },
+			'Itqon': { role: 'Verifikator', bawahan: 'Mei', pass: '12345' },
+			'Itqon': { role: 'Verifikator', bawahan: 'Okta', pass: '12345' },
+           'Itqon': { role: 'Verifikator', bawahan: 'Bella', pass: '12345' },
+		   'Itqon': { role: 'Verifikator', bawahan: 'Arfan', pass: '12345' },
+		   'Itqon': { role: 'Verifikator', bawahan: 'Didid', pass: '12345' },
+		   'Itqon': { role: 'Verifikator', bawahan: 'Lia', pass: '12345' },
+		   'Itqon': { role: 'Verifikator', bawahan: 'Agus', pass: '12345' },
+		   'Itqon': { role: 'Verifikator', bawahan: 'Agus', pass: '12345' },
+		   
+		   
+            'Kepala': { role: 'Pimpinan', pass: '123456' }
+        };
+
+        let db = JSON.parse(localStorage.getItem('dinarpus_v9')) || [];
+        let userSess = null;
+        let signPad = null;
+        let activeId = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('signature-pad-canvas');
+            signPad = new SignaturePad(canvas);
+        });
+
+        function handleLogin() {
+            const user = document.getElementById('userSelect').value;
+            const pass = document.getElementById('passInput').value;
+            if(!user || pass !== config[user].pass) return alert("User/Password Salah!");
+
+            userSess = { name: user, ...config[user] };
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('displayUser').innerText = userSess.name;
+            document.getElementById('displayRole').innerText = userSess.role;
+            
+            if(userSess.role === 'Pegawai') document.getElementById('formPegawai').classList.remove('hidden');
+            addLog(`Login: ${userSess.name} masuk.`);
+            renderTable();
+        }
+
+        function submitLaporan() {
+            const editId = document.getElementById('editId').value;
+            const fileInput = document.getElementById('inBerkas');
+            const file = fileInput.files[0];
+
+            const executeSave = (fileData = "") => {
+                if (editId) {
+                    const idx = db.findIndex(i => i.id == editId);
+                    db[idx].tgl = document.getElementById('inTgl').value;
+                    db[idx].uraian = document.getElementById('inUraian').value;
+                    db[idx].jml = document.getElementById('inJml').value;
+                    db[idx].satuan = document.getElementById('inSatuan').value;
+                    if(fileData) db[idx].berkas = fileData;
+                    addLog(`Update: Laporan ID ${editId} diubah.`);
+                } else {
+                    const data = {
+                        id: Date.now(), user: userSess.name, verifBy: userSess.verif,
+                        tgl: document.getElementById('inTgl').value,
+                        uraian: document.getElementById('inUraian').value,
+                        jml: document.getElementById('inJml').value,
+                        satuan: document.getElementById('inSatuan').value,
+                        berkas: fileData, status: 'INPUT', signV: '', signP: ''
+                    };
+                    db.push(data);
+                    addLog(`Input: Laporan baru ditambahkan.`);
+                }
+                resetForm(); save();
+            };
+
+            if (file) {
+                if(file.size > 1000000) return alert("File terlalu besar! Max 1Mb.");
+                const r = new FileReader();
+                r.readAsDataURL(file);
+                r.onload = () => executeSave(r.result);
+            } else {
+                executeSave();
+            }
+        }
+
+        function downloadFile(base64Data, fileName) {
+            const link = document.createElement("a");
+            link.href = base64Data;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function editData(id) {
+            const item = db.find(i => i.id == id);
+            if(item.status !== 'INPUT') return alert("Sudah verifikasi, tidak bisa edit.");
+            document.getElementById('editId').value = item.id;
+            document.getElementById('inTgl').value = item.tgl;
+            document.getElementById('inUraian').value = item.uraian;
+            document.getElementById('inJml').value = item.jml;
+            document.getElementById('inSatuan').value = item.satuan;
+            document.getElementById('formTitle').innerText = "Edit Kegiatan";
+            document.getElementById('btnSimpan').innerText = "Update Data";
+            window.scrollTo(0,0);
+        }
+
+        function hapusData(id) {
+            if(confirm("Hapus data ini?")) {
+                db = db.filter(i => i.id !== id);
+                save();
+                addLog(`Hapus: Data telah dihapus.`);
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = "";
+            document.getElementById('inTgl').value = "";
+            document.getElementById('inUraian').value = "";
+            document.getElementById('inJml').value = "";
+            document.getElementById('inSatuan').value = "";
+            document.getElementById('inBerkas').value = "";
+            document.getElementById('formTitle').innerText = "Tambah Kegiatan";
+            document.getElementById('btnSimpan').innerText = "Simpan";
+        }
+
+        function openSign(id) { activeId = id; document.getElementById('signModal').classList.remove('hidden'); signPad.clear(); }
+        function saveSign() {
+            const img = signPad.toDataURL();
+            const idx = db.findIndex(i => i.id === activeId);
+            if(userSess.role === 'Verifikator') { db[idx].status = 'VERIFIED'; db[idx].signV = img; }
+            else if(userSess.role === 'Pimpinan') { db[idx].status = 'FINISHED'; db[idx].signP = img; }
+            save(); closeModal();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const fStart = document.getElementById('filterStart').value;
+            const fEnd = document.getElementById('filterEnd').value;
+            tbody.innerHTML = '';
+            
+            if(fStart && fEnd) document.getElementById('printRange').innerText = `Periode: ${fStart} s.d ${fEnd}`;
+
+            db.filter(i => {
+                const rM = (userSess.role === 'Pegawai') ? (i.user === userSess.name) : (userSess.role === 'Verifikator') ? (i.verifBy === userSess.name) : true;
+                const dM = (fStart && fEnd) ? (i.tgl >= fStart && i.tgl <= fEnd) : true;
+                return rM && dM;
+            }).forEach((i, idx) => {
+                const hari = new Date(i.tgl).toLocaleDateString('id-ID', {weekday: 'long'});
+                let aksi = '';
+                if(userSess.role === 'Pegawai' && i.status === 'INPUT') {
+                    aksi = `<button onclick="editData(${i.id})" class="text-blue-600 font-bold mr-2 hover:underline">Edit</button>
+                            <button onclick="hapusData(${i.id})" class="text-red-600 font-bold hover:underline">Hapus</button>`;
+                } else if(userSess.role === 'Verifikator' && i.status === 'INPUT') {
+                    aksi = `<button onclick="openSign(${i.id})" class="bg-blue-600 text-white px-2 py-1 rounded text-[10px] font-bold">VERIF</button>`;
+                } else if(userSess.role === 'Pimpinan' && i.status === 'VERIFIED') {
+                    aksi = `<button onclick="openSign(${i.id})" class="bg-emerald-600 text-white px-2 py-1 rounded text-[10px] font-bold">TTD</button>`;
+                }
+
+                const bukti = i.berkas ? `<button onclick="downloadFile('${i.berkas}', 'bukti-${i.id}')" class="text-blue-800 font-bold underline italic">Unduh</button>` : '-';
+                let vStatus = `<span class="text-slate-300 italic">Sedang Proses</span>`;
+                if(i.status === 'VERIFIED') vStatus = `<img src="${i.signV}" class="h-6 mx-auto">`;
+                if(i.status === 'FINISHED') vStatus = `<img src="${i.signP}" class="h-6 mx-auto">`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-3 border text-center">${idx+1}</td>
+							<td class="p-2 border font-bold text-blue-900">${i.user}</td> 
+                        <td class="p-3 border"><b>${hari}</b><br>${i.tgl}</td>
+					
+                        <td class="p-3 border whitespace-pre-wrap">${i.uraian}</td>
+                        <td class="p-3 border text-center font-bold">${i.jml} ${i.satuan}</td>
+                        <td class="p-3 border text-center">${bukti}</td>
+                        <td class="p-3 border text-center">${vStatus}</td>
+                        <td class="p-3 border text-center no-print">${aksi}</td>
+                    </tr>
+                `;
+
+                if(i.status === 'FINISHED') {
+                    document.getElementById('printSignVerif').src = i.signV;
+                    document.getElementById('printSignPimpinan').src = i.signP;
+                    document.getElementById('printNameVerif').innerText = i.verifBy;
+                }
+            });
+        }
+
+        function save() { localStorage.setItem('dinarpus_v9', JSON.stringify(db)); renderTable(); }
+        function closeModal() { document.getElementById('signModal').classList.add('hidden'); }
+        function clearSign() { signPad.clear(); }
+        function addLog(m) {
+            const b = document.getElementById('logBox');
+            b.innerHTML += `<div>[${new Date().toLocaleTimeString()}] > ${m}</div>`;
+            b.scrollTop = b.scrollHeight;
+        }
+    </script>
+</body>
+</html>
