@@ -24,23 +24,22 @@
         .signature-img { max-height: 80px; mix-blend-mode: multiply; }
         .whitespace-pre-wrap { white-space: pre-wrap; }
         
-        /* Animasi Berkedip untuk Sisa Waktu Kritis */
-        .blink { animation: blinker 1s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.2; } }
 
         .toast-notif { animation: slideIn 0.5s ease-out forwards; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen">
+<body class="bg-slate-50 min-h-screen flex flex-col">
 
     <div id="notifContainer" class="fixed bottom-5 right-5 z-[100] space-y-3 pointer-events-none"></div>
 
     <div id="loginPage" class="flex items-center justify-center min-h-screen no-print px-4">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm border-t-8 border-blue-900">
-            <h1 class="text-3xl font-black text-blue-900 text-center mb-6 italic uppercase text-center leading-tight">Laporan Kinerja<br>PPPK PW</h1>
+            <h1 class="text-3xl font-black text-blue-900 text-center mb-6 italic uppercase leading-tight">Laporan Kinerja<br>PPPK PW</h1>
             <div class="space-y-4">
-                <select id="userSelect" class="w-full p-3 border rounded-xl outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 font-bold text-sm">
+                <select id="userSelect" class="w-full p-3 border rounded-xl outline-none bg-gray-50 focus:ring-2 focus:ring-blue-500 font-bold text-sm text-black">
                     <option value="">-- Pilih User --</option>
                     <option value="Saeful">Saeful (Pegawai)</option>
                     <option value="Fuad">Fuad (Pegawai)</option>
@@ -77,7 +76,7 @@
         </div>
     </div>
 
-    <div id="dashboard" class="hidden">
+    <div id="dashboard" class="hidden flex-1">
         <nav class="bg-blue-900 text-white p-4 no-print flex justify-between items-center shadow-md">
             <div class="font-black text-xl italic tracking-tighter uppercase">DINARPUS PW 2026</div>
             <div class="flex items-center gap-4">
@@ -85,20 +84,37 @@
                     <p id="displayUser" class="text-xs font-bold"></p>
                     <p id="displayRole" class="text-[10px] text-blue-300 uppercase font-black"></p>
                 </div>
-                <button onclick="handleLogout()" class="bg-red-500 p-2 rounded-lg text-[10px] font-bold">LOGOUT</button>
+                <div class="flex gap-1">
+                    <button onclick="togglePasswordModal()" class="bg-amber-500 p-2 rounded-lg text-[9px] font-bold text-white uppercase">Ganti Pass</button>
+                    <button onclick="handleLogout()" class="bg-red-500 p-2 rounded-lg text-[9px] font-bold text-white uppercase">Logout</button>
+                </div>
             </div>
         </nav>
 
         <div class="max-w-7xl mx-auto p-4 md:p-8">
-            
-            <div id="timerContainer" class="hidden no-print mb-6 flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border">
+            <div id="trackingStatus" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-orange-400">
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Menunggu Verifikasi</p>
+                    <p id="countInput" class="text-2xl font-black text-orange-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500">
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Sudah Diverifikasi</p>
+                    <p id="countVerified" class="text-2xl font-black text-blue-600">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-emerald-500">
+                    <p class="text-[10px] font-black text-gray-400 uppercase">Selesai (Final)</p>
+                    <p id="countFinished" class="text-2xl font-black text-emerald-600">0</p>
+                </div>
+            </div>
+
+            <div id="timerContainer" class="hidden no-print mb-6 bg-white p-5 rounded-2xl shadow-sm border flex items-center justify-between">
                 <div>
-                    <span class="text-[10px] font-black text-slate-400 uppercase block">Status Sistem:</span>
-                    <span id="systemStatus" class="font-bold text-sm">Mengecek Waktu...</span>
+                    <span class="text-[10px] font-black text-slate-400 uppercase block tracking-widest leading-none mb-1">Sisa Waktu Input Hari Ini:</span>
+                    <span id="systemStatusText" class="font-bold text-xs text-emerald-600 uppercase">Sistem Terbuka</span>
                 </div>
                 <div class="text-right">
-                    <span class="text-[10px] font-black text-slate-400 uppercase block italic">Sisa Waktu Input:</span>
-                    <span id="countdownDisplay" class="font-black text-xl tabular-nums">00:00:00</span>
+                    <span id="countdownDisplay" class="font-black text-3xl tabular-nums text-blue-900 tracking-tighter">00:00:00</span>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Deadline: 16:00 WIB</p>
                 </div>
             </div>
 
@@ -111,14 +127,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Tanggal</label>
-                            <input type="date" id="inTgl" class="w-full border p-3 rounded-xl text-sm bg-gray-100 mt-1" readonly>
+                            <input type="date" id="inTgl" class="w-full border p-3 rounded-xl text-sm bg-slate-50 mt-1 outline-none">
                         </div>
                         <div class="md:col-span-3">
                             <label class="text-[10px] font-bold text-slate-400 uppercase">Uraian Kegiatan</label>
                             <textarea id="inUraian" rows="3" class="w-full border p-3 rounded-xl text-sm bg-slate-50 mt-1 outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         </div>
                         <div>
-                            <label class="text-[10px] font-bold text-slate-400 uppercase">Volume & Satuan</label>
+                            <label class="text-[10px] font-bold text-slate-400 uppercase">Vol & Satuan</label>
                             <div class="flex gap-2 mt-1">
                                 <input type="number" id="inJml" placeholder="Jml" class="border p-3 rounded-xl text-sm w-20 bg-slate-50">
                                 <input type="text" id="inSatuan" placeholder="Satuan" class="border p-3 rounded-xl text-sm w-full bg-slate-50">
@@ -129,26 +145,25 @@
                             <input type="file" id="inBerkas" class="w-full text-xs mt-1 border p-2 rounded-xl bg-slate-50">
                         </div>
                         <div class="flex items-end">
-                            <button onclick="submitLaporan()" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold uppercase hover:bg-black transition shadow-md">Simpan Laporan</button>
+                            <button onclick="submitLaporan()" class="w-full bg-blue-700 text-white py-3 rounded-xl font-bold uppercase shadow-md hover:bg-black transition">Simpan Laporan</button>
                         </div>
                     </div>
                 </div>
-                <div id="inputLocked" class="hidden text-center py-6 bg-red-50 rounded-xl border-2 border-dashed border-red-200">
-                    <span class="text-3xl mb-2 block">🔒</span>
-                    <h2 class="text-red-600 font-black text-lg uppercase italic">SISTEM TERKUNCI OTOMATIS</h2>
-                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Batas pengisian jam 16.00 WIB telah berakhir.</p>
+                <div id="inputLocked" class="hidden text-center py-10 bg-red-50 rounded-2xl border-2 border-dashed border-red-200">
+                    <p class="text-4xl mb-3">🔒</p>
+                    <h2 class="text-red-600 font-black text-xl uppercase italic leading-none">Sistem Terkunci Otomatis</h2>
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Batas pengisian jam 16:00 WIB telah berakhir.</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border p-4 md:p-8">
+            <div class="bg-white rounded-3xl shadow-xl overflow-hidden border p-4 md:p-8 mb-10">
                 <div class="no-print flex flex-wrap gap-3 mb-6 items-end border-b pb-6">
                     <div class="flex-1 min-w-[150px]">
-                        <label class="text-[10px] font-black text-gray-400 uppercase">Periode Mulai</label>
-                        <input type="date" id="filterStart" class="w-full border p-2 rounded-xl text-sm">
-                    </div>
-                    <div class="flex-1 min-w-[150px]">
-                        <label class="text-[10px] font-black text-gray-400 uppercase">Sampai</label>
-                        <input type="date" id="filterEnd" class="w-full border p-2 rounded-xl text-sm">
+                        <label class="text-[10px] font-black text-gray-400 uppercase">Periode</label>
+                        <div class="flex gap-2">
+                            <input type="date" id="filterStart" class="w-full border p-2 rounded-xl text-sm">
+                            <input type="date" id="filterEnd" class="w-full border p-2 rounded-xl text-sm">
+                        </div>
                     </div>
                     <button onclick="renderTable()" class="bg-blue-800 text-white px-6 py-2 rounded-xl font-bold text-sm uppercase">Cari</button>
                     <button onclick="window.print()" class="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-sm uppercase italic">Cetak PDF</button>
@@ -159,16 +174,16 @@
                     <h2 class="text-lg font-bold uppercase leading-tight">DINAS KEARSIPAN DAN PERPUSTAKAAN KABUPATEN PURBALINGGA</h2>
                 </div>
 
-                <table class="w-full text-xs text-left border-collapse border">
+                <table class="w-full text-[11px] text-left border-collapse border">
                     <thead>
                         <tr class="bg-slate-800 text-white uppercase font-black border">
                             <th class="p-3 border text-center w-10">No</th>
                             <th class="p-2 border">Nama</th>
                             <th class="p-2 border">Tanggal</th>
                             <th class="p-3 border">Uraian Kegiatan</th>
-                            <th class="p-3 border text-center">Jumlah & Satuan</th>
+                            <th class="p-3 border text-center">Volume</th>
                             <th class="p-3 border text-center">Bukti</th>
-                            <th class="p-3 border text-center">Paraf</th>
+                            <th class="p-3 border text-center">Status & Paraf</th>
                             <th class="p-3 border text-center no-print">Aksi</th>
                         </tr>
                     </thead>
@@ -177,16 +192,19 @@
 
                 <div class="print-only signature-wrapper mt-12">
                     <div class="signature-box">
-                        
-                        <img id="printSignVerif" class="signature-img mx-auto">
+                        <p class="text-[10px] font-bold uppercase">Mengetahui/Memverifikasi,</p>
+                        <div class="h-20 flex items-center justify-center">
+                            <img id="printSignVerif" class="signature-img mx-auto">
+                        </div>
                         <p id="printNameVerif" class="font-bold underline uppercase text-sm mt-2"></p>
+                        <p id="printNipVerif" class="text-[10px] font-bold uppercase"></p>
                     </div>
                     <div class="signature-box">
-                        <p class="text-[10px] font-bold uppercase leading-tight">Kepala Dinas Kearsipan dan Perpustakaan<br>Kabupaten Purbalingga,</p>
-                        <div class="h-16 flex items-center justify-center">
+                        <p class="text-[10px] font-bold uppercase">Kepala Dinas Kearsipan dan Perpustakaan,</p>
+                        <div class="h-20 flex items-center justify-center">
                             <img id="printSignPimpinan" class="signature-img mx-auto">
                         </div>
-                        <p class="font-bold underline uppercase text-sm mt-1">ENDI ASTONO, S.Sos</p>
+                        <p class="font-bold underline uppercase text-sm mt-2">ENDI ASTONO, S.Sos</p>
                         <p class="text-[10px] font-bold uppercase leading-tight">Pembina Utama Muda <br>NIP. 196709191990031010</p>
                     </div>
                 </div>
@@ -194,17 +212,34 @@
         </div>
     </div>
 
-    <div id="signModal" class="fixed inset-0 bg-black/70 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-6 w-full max-w-md text-center">
-            <h3 class="text-lg font-bold mb-4 italic uppercase">Tanda Tangan Digital</h3>
-            <canvas id="signature-pad-canvas" width="400" height="200" class="w-full rounded-lg"></canvas>
-            <div class="flex gap-2 mt-4">
-                <button onclick="clearSign()" class="bg-gray-100 px-4 py-2 rounded-xl text-xs font-bold uppercase">Ulangi</button>
-                <button onclick="saveSign()" class="bg-blue-800 text-white flex-1 py-2 rounded-xl font-bold uppercase">Simpan TTD</button>
-                <button onclick="closeModal()" class="text-red-500 text-xs px-2 font-bold uppercase underline">Batal</button>
+    <div id="passModal" class="fixed inset-0 bg-black/70 hidden z-[70] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-xs text-center shadow-2xl">
+            <h3 class="text-lg font-bold mb-4 uppercase italic text-blue-900">Ganti Password</h3>
+            <input type="password" id="newPass" placeholder="Masukkan Password Baru" class="w-full p-3 border rounded-xl mb-4 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+            <div class="flex flex-col gap-2">
+                <button onclick="updatePassword()" class="bg-amber-500 text-white py-3 rounded-xl font-bold uppercase shadow-lg">Simpan Baru</button>
+                <button onclick="togglePasswordModal()" class="text-slate-400 text-xs font-bold uppercase py-2 underline">Batal</button>
             </div>
         </div>
     </div>
+
+    <div id="signModal" class="fixed inset-0 bg-black/70 hidden z-[60] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 w-full max-w-md text-center">
+            <h3 class="text-lg font-bold mb-4 uppercase italic">Tanda Tangan Digital</h3>
+            <canvas id="signature-pad-canvas" width="400" height="200" class="w-full rounded-lg border-2 border-dashed"></canvas>
+            <div class="flex gap-2 mt-4">
+                <button onclick="clearSign()" class="bg-gray-100 px-4 py-2 rounded-xl text-[10px] font-bold uppercase">Ulangi</button>
+                <button onclick="saveSign()" class="bg-blue-800 text-white flex-1 py-2 rounded-xl font-bold uppercase">Simpan TTD</button>
+                <button onclick="closeSignModal()" class="text-red-500 text-xs font-bold uppercase px-2">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="no-print w-full py-6 mt-auto text-center border-t bg-white">
+        <p class="text-slate-400 text-[11px] font-bold tracking-widest uppercase">
+            Copyright &copy; 2026 <span class="text-blue-900">Sae Development</span>
+        </p>
+    </footer>
 
     <script>
         const firebaseConfig = {
@@ -218,11 +253,12 @@
         };
         firebase.initializeApp(firebaseConfig);
         const dbRef = firebase.database().ref('dinarpus_db');
+        const passRef = firebase.database().ref('dinarpus_passwords');
 
         const config = {
-            'Murti': { role: 'Verifikator', pass: '12345' },
-            'Marliati': { role: 'Verifikator', pass: '12345' },
-            'Itqon': { role: 'Verifikator', pass: '12345' },
+            'Murti': { role: 'Verifikator', pass: '12345', full: 'MURTIKOWATI, S.Sos', nip: 'NIP. 197210151998032006' },
+            'Marliati': { role: 'Verifikator', pass: '12345', full: 'MARLIATI, S.Sos', nip: 'NIP. 196803131994032010' },
+            'Itqon': { role: 'Verifikator', pass: '12345', full: 'M. NUR ITQON, S.T', nip: 'NIP. 197805212010011009' },
             'Kepala': { role: 'Pimpinan', pass: '123456' },
             'Saeful': { role: 'Pegawai', verif: 'Murti', pass: 's123' },
             'Fuad': { role: 'Pegawai', verif: 'Murti', pass: '123' },
@@ -256,13 +292,66 @@
             signPad = new SignaturePad(document.getElementById('signature-pad-canvas'));
             const saved = localStorage.getItem('dinarpus_session');
             if (saved) { userSess = JSON.parse(saved); renderDashboard(); }
-            setInterval(updateCountdown, 1000); // Mulai countdown
+            setInterval(updateCountdown, 1000);
         });
 
-        function handleLogin() {
+        // 8. Logika Waktu Mundur (Countdown)
+        function updateCountdown() {
+            if (!userSess) return;
+            const now = new Date();
+            const target = new Date(); target.setHours(16, 0, 0, 0);
+            const diff = target - now;
+
+            const display = document.getElementById('countdownDisplay');
+            const statusText = document.getElementById('systemStatusText');
+            const inputActive = document.getElementById('inputActive');
+            const inputLocked = document.getElementById('inputLocked');
+            
+            document.getElementById('timerContainer').classList.remove('hidden');
+
+            if (diff <= 0) {
+                display.innerText = "00:00:00";
+                display.className = "font-black text-3xl tabular-nums text-slate-300 tracking-tighter";
+                statusText.innerText = "Sistem Terkunci";
+                statusText.className = "font-bold text-xs text-red-600 uppercase";
+                if (userSess.role === 'Pegawai') {
+                    inputActive.classList.add('hidden');
+                    inputLocked.classList.remove('hidden');
+                }
+                return;
+            }
+
+            const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
+            display.innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+            if (diff < 3600000) { // < 1 Jam
+                display.classList.add('text-red-600', 'blink');
+                statusText.innerText = "Sistem Segera Dikunci!";
+                statusText.classList.replace('text-emerald-600', 'text-red-600');
+            }
+        }
+
+        // 9. Logika Ganti Password
+        function togglePasswordModal() { document.getElementById('passModal').classList.toggle('hidden'); }
+        function updatePassword() {
+            const val = document.getElementById('newPass').value;
+            if(val.length < 3) return alert("Minimal 3 karakter!");
+            passRef.child(userSess.name).set(val).then(() => {
+                alert("Password Diganti! SIlakan Login Ulang.");
+                handleLogout();
+            });
+        }
+
+        async function handleLogin() {
             const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('passInput').value;
-            if (!user || !config[user] || pass !== config[user].pass) return alert("User/Password Salah!");
+            if (!user) return alert("Pilih User!");
+            
+            const snap = await passRef.child(user).once('value');
+            const correctPass = snap.val() || config[user].pass;
+
+            if (pass !== correctPass) return alert("Password Salah!");
+            
             userSess = { name: user, ...config[user] };
             localStorage.setItem('dinarpus_session', JSON.stringify(userSess));
             renderDashboard();
@@ -270,74 +359,16 @@
 
         function handleLogout() { localStorage.removeItem('dinarpus_session'); location.reload(); }
 
-        // LOGIKA HITUNG MUNDUR (Countdown)
-        function updateCountdown() {
-            if (!userSess) return;
-
-            const now = new Date();
-            const target = new Date();
-            target.setHours(16, 0, 0, 0);
-
-            const diff = target - now;
-            const display = document.getElementById('countdownDisplay');
-            const statusText = document.getElementById('systemStatus');
-            const timerContainer = document.getElementById('timerContainer');
-
-            if (diff <= 0) {
-                display.innerText = "00:00:00";
-                display.className = "font-black text-xl tabular-nums text-red-600";
-                statusText.innerText = "SISTEM TERKUNCI";
-                statusText.className = "font-bold text-sm text-red-600";
-                
-                // Jika sedang login sebagai pegawai, kunci form
-                if(userSess.role === 'Pegawai' && !document.getElementById('inputActive').classList.contains('hidden')) {
-                    renderDashboard(); 
-                }
-                return;
-            }
-
-            timerContainer.classList.remove('hidden');
-            const h = Math.floor(diff / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-
-            display.innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-
-            if (h >= 1) {
-                display.className = "font-black text-xl tabular-nums text-emerald-600";
-                statusText.innerText = "SISTEM TERBUKA";
-                statusText.className = "font-bold text-sm text-emerald-600";
-            } else if (m >= 10) {
-                display.className = "font-black text-xl tabular-nums text-orange-500";
-                statusText.innerText = "WAKTU TERBATAS";
-                statusText.className = "font-bold text-sm text-orange-500";
-            } else {
-                display.className = "font-black text-xl tabular-nums text-red-600 blink";
-                statusText.innerText = "SEGERA SIMPAN!";
-                statusText.className = "font-bold text-sm text-red-600";
-            }
-        }
-
         function renderDashboard() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             document.getElementById('displayUser').innerText = userSess.name;
             document.getElementById('displayRole').innerText = userSess.role;
-
-            const jamSekarang = new Date().getHours();
             if (userSess.role === 'Pegawai') {
                 document.getElementById('formPegawai').classList.remove('hidden');
-                if (jamSekarang >= 16) {
-                    document.getElementById('inputActive').classList.add('hidden');
-                    document.getElementById('inputLocked').classList.remove('hidden');
-                } else {
-                    document.getElementById('inputActive').classList.remove('hidden');
-                    document.getElementById('inputLocked').classList.add('hidden');
-                    document.getElementById('inTgl').value = new Date().toISOString().split('T')[0];
-                }
+                document.getElementById('inTgl').value = new Date().toISOString().split('T')[0];
             }
             muatDataOnline();
-            aktifkanNotifRealtime();
         }
 
         function muatDataOnline() {
@@ -347,117 +378,100 @@
             });
         }
 
-        function submitLaporan() {
-            if (new Date().getHours() >= 16) return alert("Sistem terkunci!");
-            const editId = document.getElementById('editId').value;
-            const file = document.getElementById('inBerkas').files[0];
-            const executeSave = (img = "") => {
-                const id = editId || Date.now();
-                const cur = editId ? db.find(x => x.id == editId) : null;
-                const data = {
-                    id: id, user: userSess.name, verifBy: userSess.verif || '',
-                    tgl: document.getElementById('inTgl').value,
-                    uraian: document.getElementById('inUraian').value,
-                    jml: document.getElementById('inJml').value,
-                    satuan: document.getElementById('inSatuan').value,
-                    status: cur ? cur.status : 'INPUT',
-                    signV: cur ? (cur.signV || '') : '',
-                    signP: cur ? (cur.signP || '') : '',
-                    berkas: img || (cur ? cur.berkas : '')
-                };
-                dbRef.child(id).set(data).then(() => { alert("Tersimpan!"); resetForm(); });
-            };
-            if (file) {
-                const r = new FileReader(); r.readAsDataURL(file);
-                r.onload = () => executeSave(r.result);
-            } else executeSave();
-        }
-
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             const fStart = document.getElementById('filterStart').value;
             const fEnd = document.getElementById('filterEnd').value;
             tbody.innerHTML = '';
 
-            db.filter(i => {
+            let dataFilter = db.filter(i => {
                 const rM = (userSess.role === 'Pegawai') ? (i.user === userSess.name) :
                            (userSess.role === 'Verifikator') ? (i.verifBy === userSess.name) : true;
                 const dM = (fStart && fEnd) ? (i.tgl >= fStart && i.tgl <= fEnd) : true;
                 return rM && dM;
-            }).sort((a,b) => b.id - a.id).forEach((i, idx) => {
-                let sImg = i.status==='INPUT' ? '...' : `<img src="${i.status==='VERIFIED'?i.signV:i.signP}" class="h-10 mx-auto">`;
-                let btn = '';
-                if (userSess.role === 'Pegawai' && i.status === 'INPUT') {
-                    btn = `<button onclick="editData(${i.id})" class="text-blue-600 font-bold mr-2">Edit</button>
-                           <button onclick="hapusData(${i.id})" class="text-red-600 font-bold">Hapus</button>`;
-                } else if (userSess.role === 'Verifikator' && i.status === 'INPUT') {
-                    btn = `<button onclick="openSign(${i.id})" class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold">VERIF</button>`;
-                } else if (userSess.role === 'Pimpinan' && i.status === 'VERIFIED') {
-                    btn = `<button onclick="openSign(${i.id})" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold">TTD KADIN</button>`;
-                }
+            }).sort((a,b) => b.id - a.id);
+
+            // Hitung Tracking Status
+            let cInput = 0, cVerified = 0, cFinished = 0;
+
+            dataFilter.forEach((i, idx) => {
+                if (i.status === 'INPUT') cInput++;
+                else if (i.status === 'VERIFIED') cVerified++;
+                else if (i.status === 'FINISHED') cFinished++;
+
+                let statusBadge = '';
+                if (i.status === 'INPUT') statusBadge = '<span class="text-orange-500 font-bold uppercase text-[9px]">Menunggu Verif</span>';
+                else if (i.status === 'VERIFIED') statusBadge = `<div class="flex flex-col items-center"><span class="text-blue-600 font-bold text-[8px] uppercase">Terverifikasi</span><img src="${i.signV}" class="h-8"></div>`;
+                else if (i.status === 'FINISHED') statusBadge = `<div class="flex flex-col items-center"><span class="text-emerald-600 font-bold text-[8px] uppercase">Selesai (Final)</span><img src="${i.signP}" class="h-8"></div>`;
+
+                let btn = (userSess.role === 'Pegawai' && i.status === 'INPUT') ? `<button onclick="editData(${i.id})" class="text-blue-600 mr-2">Edit</button><button onclick="hapusData(${i.id})" class="text-red-600">Hapus</button>` : 
+                          (userSess.role === 'Verifikator' && i.status === 'INPUT') ? `<button onclick="openSign(${i.id})" class="bg-blue-600 text-white px-3 py-1 rounded text-[10px] font-bold">Setujui</button>` :
+                          (userSess.role === 'Pimpinan' && i.status === 'VERIFIED') ? `<button onclick="openSign(${i.id})" class="bg-green-600 text-white px-3 py-1 rounded text-[10px] font-bold">TTD KADIN</button>` : '';
 
                 tbody.innerHTML += `
                     <tr class="border hover:bg-slate-50">
-                        <td class="p-3 border text-center">${idx+1}</td>
+                        <td class="p-3 border text-center font-bold">${idx+1}</td>
                         <td class="p-2 border font-bold text-blue-900">${i.user}</td>
                         <td class="p-2 border">${i.tgl}</td>
-                        <td class="p-2 border whitespace-pre-wrap text-[11px]">${i.uraian}</td>
+                        <td class="p-2 border whitespace-pre-wrap">${i.uraian}</td>
                         <td class="p-2 border text-center font-bold">${i.jml} ${i.satuan}</td>
                         <td class="p-2 border text-center">${i.berkas ? `<a href="${i.berkas}" download class="text-blue-600 font-bold underline">FILE</a>` : '-'}</td>
-                        <td class="p-2 border text-center">${sImg}</td>
+                        <td class="p-2 border text-center">${statusBadge}</td>
                         <td class="p-2 border text-center no-print">${btn}</td>
                     </tr>`;
 
-                if(i.status !== 'INPUT') {
-                    document.getElementById('printSignVerif').src = i.signV;
-                    document.getElementById('printNameVerif').innerText = 
-                        i.verifBy === 'Murti' ? 'MURTIKOWATI, S.Sos' : 
-                        i.verifBy === 'Marliati' ? 'MARLIATI, S.Sos' : 'M. NUR ITQON, S.T';
+                if(i.verifBy && config[i.verifBy]) {
+                    document.getElementById('printNameVerif').innerText = config[i.verifBy].full;
+                    document.getElementById('printNipVerif').innerText = config[i.verifBy].nip;
+                    if(i.signV) document.getElementById('printSignVerif').src = i.signV;
                 }
                 if(i.status === 'FINISHED') document.getElementById('printSignPimpinan').src = i.signP;
             });
+
+            document.getElementById('countInput').innerText = cInput;
+            document.getElementById('countVerified').innerText = cVerified;
+            document.getElementById('countFinished').innerText = cFinished;
+        }
+
+        function submitLaporan() {
+            const editId = document.getElementById('editId').value;
+            const file = document.getElementById('inBerkas').files[0];
+            const executeSave = (img = "") => {
+                const id = editId || Date.now();
+                const cur = editId ? db.find(x => x.id == editId) : null;
+                const data = {
+                    id: id, user: userSess.name, verifBy: userSess.verif || (cur ? cur.verifBy : ''),
+                    tgl: document.getElementById('inTgl').value, uraian: document.getElementById('inUraian').value,
+                    jml: document.getElementById('inJml').value, satuan: document.getElementById('inSatuan').value,
+                    status: cur ? cur.status : 'INPUT', signV: cur ? (cur.signV || '') : '', signP: cur ? (cur.signP || '') : '', berkas: img || (cur ? cur.berkas : '')
+                };
+                dbRef.child(id).set(data).then(() => { alert("Laporan Disimpan!"); resetForm(); });
+            };
+            if (file) { const r = new FileReader(); r.readAsDataURL(file); r.onload = () => executeSave(r.result); }
+            else executeSave();
         }
 
         function openSign(id) { activeId = id; document.getElementById('signModal').classList.remove('hidden'); signPad.clear(); }
-        function closeModal() { document.getElementById('signModal').classList.add('hidden'); }
+        function closeSignModal() { document.getElementById('signModal').classList.add('hidden'); }
         function clearSign() { signPad.clear(); }
         function saveSign() {
             const img = signPad.toDataURL();
             const up = userSess.role === 'Verifikator' ? { status:'VERIFIED', signV:img } : { status:'FINISHED', signP:img };
-            dbRef.child(activeId).update(up).then(() => closeModal());
+            dbRef.child(activeId).update(up).then(() => closeSignModal());
         }
 
-        function showToast(nama, uraian) {
-            const container = document.getElementById('notifContainer');
-            const toast = document.createElement('div');
-            toast.className = "toast-notif pointer-events-auto bg-white border-l-4 border-blue-600 shadow-2xl p-4 rounded-xl w-72 mb-3 border flex flex-col";
-            toast.innerHTML = `<p class="text-[10px] font-black text-blue-600 uppercase">Input Baru!</p><p class="text-sm font-bold">${nama}</p><p class="text-[11px] truncate italic">${uraian}</p>`;
-            container.appendChild(toast);
-            new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{});
-            setTimeout(() => toast.remove(), 8000);
-        }
-
-        function aktifkanNotifRealtime() {
-            if (userSess.role === 'Verifikator') {
-                let init = true;
-                dbRef.limitToLast(1).on('child_added', s => {
-                    if (init) { init = false; return; }
-                    const d = s.val();
-                    if (d.verifBy === userSess.name && d.status === 'INPUT') showToast(d.user, d.uraian);
-                });
-            }
-        }
-        function hapusData(id) { if(confirm("Hapus?")) dbRef.child(id).remove(); }
+        function hapusData(id) { if(confirm("Hapus Data Ini?")) dbRef.child(id).remove(); }
         function editData(id) {
-            if (new Date().getHours() >= 16) return alert("Sistem terkunci.");
             const item = db.find(x => x.id == id);
             document.getElementById('editId').value = item.id;
+            document.getElementById('inTgl').value = item.tgl;
             document.getElementById('inUraian').value = item.uraian;
             document.getElementById('inJml').value = item.jml;
             document.getElementById('inSatuan').value = item.satuan;
-            document.getElementById('formTitle').innerText = "Edit Kegiatan";
+            document.getElementById('formTitle').innerText = "Edit Laporan";
             window.scrollTo(0,0);
         }
+
         function resetForm() {
             document.getElementById('editId').value = "";
             document.getElementById('inUraian').value = "";
