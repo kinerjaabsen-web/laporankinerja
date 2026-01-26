@@ -16,9 +16,19 @@
             body { background: white; padding: 0; margin: 0; }
             .signature-wrapper { display: flex !important; flex-direction: row !important; justify-content: space-between !important; margin-top: 50px; }
             .signature-box { width: 45% !important; text-align: center; }
+            
+            /* Penyesuaian Lebar Kolom PDF */
             table { width: 100% !important; border-collapse: collapse; table-layout: fixed; }
-            th, td { border: 1px solid black !important; padding: 8px !important; word-wrap: break-word; }
+            th, td { border: 1px solid black !important; padding: 8px !important; word-wrap: break-word; overflow-wrap: break-word; }
+            .col-no { width: 30px; }
+            .col-nama { width: 80px; }
+            .col-tgl { width: 80px; }
+            .col-uraian { width: 60% !important; } /* Kolom uraian diperlebar */
+            .col-vol { width: 70px; }
+            .col-bukti { width: 50px; }
+            .col-status { width: 100px; }
         }
+
         .print-only { display: none; }
         #signature-pad-canvas { border: 2px dashed #cbd5e1; background: #f8fafc; cursor: crosshair; }
         .signature-img { max-height: 80px; mix-blend-mode: multiply; }
@@ -27,8 +37,27 @@
         .blink { animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.2; } }
 
-        .toast-notif { animation: slideIn 0.5s ease-out forwards; }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        /* Style untuk Running Text */
+        .marquee-container {
+            background: #fef3c7;
+            border-bottom: 1px solid #fcd34d;
+            padding: 6px 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 20s linear infinite;
+            font-weight: 800;
+            font-size: 12px;
+            color: #92400e;
+            text-transform: uppercase;
+        }
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col">
@@ -91,6 +120,12 @@
             </div>
         </nav>
 
+        <div class="no-print marquee-container">
+            <div class="marquee-text">
+                PENGUMUMAN: SISTEM LAPORAN KINERJA HARIAN AKAN DITUTUP OTOMATIS PADA PUKUL 16:15 WIB SETIAP HARINYA. PASTIKAN SEMUA KEGIATAN SUDAH TERINPUT SEBELUM JAM TERSEBUT. TERIMAKASIH.
+            </div>
+        </div>
+
         <div class="max-w-7xl mx-auto p-4 md:p-8">
             <div id="trackingStatus" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-orange-400">
@@ -114,7 +149,7 @@
                 </div>
                 <div class="text-right">
                     <span id="countdownDisplay" class="font-black text-3xl tabular-nums text-blue-900 tracking-tighter">00:00:00</span>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase">Deadline: 16:00 WIB</p>
+                    <p class="text-[9px] font-bold text-slate-400 uppercase">Deadline: 16:15 WIB</p>
                 </div>
             </div>
 
@@ -152,7 +187,7 @@
                 <div id="inputLocked" class="hidden text-center py-10 bg-red-50 rounded-2xl border-2 border-dashed border-red-200">
                     <p class="text-4xl mb-3">🔒</p>
                     <h2 class="text-red-600 font-black text-xl uppercase italic leading-none">Sistem Terkunci Otomatis</h2>
-                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Batas pengisian jam 16:00 WIB telah berakhir.</p>
+                    <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-2">Batas pengisian jam 16:15 WIB telah berakhir.</p>
                 </div>
             </div>
 
@@ -177,14 +212,14 @@
                 <table class="w-full text-[11px] text-left border-collapse border">
                     <thead>
                         <tr class="bg-slate-800 text-white uppercase font-black border">
-                            <th class="p-3 border text-center w-10">No</th>
-                            <th class="p-2 border">Nama</th>
-                            <th class="p-2 border">Tanggal</th>
-                            <th class="p-3 border">Uraian Kegiatan</th>
-                            <th class="p-3 border text-center">Volume</th>
-                            <th class="p-3 border text-center">Bukti</th>
-                            <th class="p-3 border text-center">Status & Paraf</th>
-                            <th class="p-3 border text-center no-print">Aksi</th>
+                            <th class="p-3 border text-center col-no">No</th>
+                            <th class="p-2 border col-nama">Nama</th>
+                            <th class="p-2 border col-tgl">Tanggal</th>
+                            <th class="p-3 border col-uraian">Uraian Kegiatan</th>
+                            <th class="p-3 border text-center col-vol">Volume</th>
+                            <th class="p-3 border text-center col-bukti">Bukti</th>
+                            <th class="p-3 border text-center col-status">Status & Paraf</th>
+                            <th class="p-3 border text-center no-print w-24">Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody"></tbody>
@@ -242,6 +277,7 @@
     </footer>
 
     <script>
+        // Firebase Config & Config User tetap sama
         const firebaseConfig = {
             apiKey: "AIzaSyAi6r89ZlhtZ325z3ypGQhrKUdq-mHXNCs",
             authDomain: "laporankinerja-fa09e.firebaseapp.com",
@@ -295,11 +331,12 @@
             setInterval(updateCountdown, 1000);
         });
 
-        // 8. Logika Waktu Mundur (Countdown)
+        // 8. Logika Waktu Mundur (Countdown) - DIUBAH KE 16:15
         function updateCountdown() {
             if (!userSess) return;
             const now = new Date();
-            const target = new Date(); target.setHours(16, 0, 0, 0);
+            const target = new Date(); 
+            target.setHours(16, 15, 0, 0); // Diubah ke jam 16:15
             const diff = target - now;
 
             const display = document.getElementById('countdownDisplay');
@@ -324,14 +361,14 @@
             const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
             display.innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 
-            if (diff < 3600000) { // < 1 Jam
+            if (diff < 1800000) { // < 30 Menit (Indikator Bahaya)
                 display.classList.add('text-red-600', 'blink');
                 statusText.innerText = "Sistem Segera Dikunci!";
                 statusText.classList.replace('text-emerald-600', 'text-red-600');
             }
         }
 
-        // 9. Logika Ganti Password
+        // Fungsi lainnya tetap sama
         function togglePasswordModal() { document.getElementById('passModal').classList.toggle('hidden'); }
         function updatePassword() {
             const val = document.getElementById('newPass').value;
@@ -346,12 +383,9 @@
             const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('passInput').value;
             if (!user) return alert("Pilih User!");
-            
             const snap = await passRef.child(user).once('value');
             const correctPass = snap.val() || config[user].pass;
-
             if (pass !== correctPass) return alert("Password Salah!");
-            
             userSess = { name: user, ...config[user] };
             localStorage.setItem('dinarpus_session', JSON.stringify(userSess));
             renderDashboard();
@@ -391,7 +425,6 @@
                 return rM && dM;
             }).sort((a,b) => b.id - a.id);
 
-            // Hitung Tracking Status
             let cInput = 0, cVerified = 0, cFinished = 0;
 
             dataFilter.forEach((i, idx) => {
@@ -410,13 +443,13 @@
 
                 tbody.innerHTML += `
                     <tr class="border hover:bg-slate-50">
-                        <td class="p-3 border text-center font-bold">${idx+1}</td>
-                        <td class="p-2 border font-bold text-blue-900">${i.user}</td>
-                        <td class="p-2 border">${i.tgl}</td>
-                        <td class="p-2 border whitespace-pre-wrap">${i.uraian}</td>
-                        <td class="p-2 border text-center font-bold">${i.jml} ${i.satuan}</td>
-                        <td class="p-2 border text-center">${i.berkas ? `<a href="${i.berkas}" download class="text-blue-600 font-bold underline">FILE</a>` : '-'}</td>
-                        <td class="p-2 border text-center">${statusBadge}</td>
+                        <td class="p-3 border text-center font-bold col-no">${idx+1}</td>
+                        <td class="p-2 border font-bold text-blue-900 col-nama">${i.user}</td>
+                        <td class="p-2 border col-tgl">${i.tgl}</td>
+                        <td class="p-2 border whitespace-pre-wrap col-uraian">${i.uraian}</td>
+                        <td class="p-2 border text-center font-bold col-vol">${i.jml} ${i.satuan}</td>
+                        <td class="p-2 border text-center col-bukti">${i.berkas ? `<a href="${i.berkas}" download class="text-blue-600 font-bold underline">FILE</a>` : '-'}</td>
+                        <td class="p-2 border text-center col-status">${statusBadge}</td>
                         <td class="p-2 border text-center no-print">${btn}</td>
                     </tr>`;
 
