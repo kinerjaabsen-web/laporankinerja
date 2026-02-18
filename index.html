@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
@@ -175,17 +177,22 @@
                             <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Sampai</label>
                             <input type="date" id="filterEnd" class="w-full border-2 border-white p-2 rounded-xl text-xs outline-none focus:border-blue-400">
                         </div>
-                        <button onclick="renderTable()" class="bg-blue-600 hover:bg-slate-900 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md">Tampilkan</button>
+                        <button onclick="renderTable()" class="bg-slate-900 hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md">Tampilkan</button>
                     </div>
-                    <button onclick="window.print()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md flex items-center gap-2">
-                        <span>🖨️</span> Cetak PDF
-                    </button>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="exportToExcel()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md flex items-center gap-2">
+                            <span>📊</span> Export Excel
+                        </button>
+                        <button onclick="window.print()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md flex items-center gap-2">
+                            <span>🖨️</span> Cetak PDF
+                        </button>
+                    </div>
                 </div>
 
                 <div class="print-only text-center border-b-[3px] border-black pb-4 mb-6">
                     <h1 class="text-lg font-black uppercase leading-tight">Laporan Kinerja Harian PPPK Paruh Waktu</h1>
                     <p class="text-sm font-bold uppercase mt-1">Dinas Kearsipan dan Perpustakaan Kabupaten Purbalingga</p>
-                    
                 </div>
 
                 <div class="overflow-x-auto p-0 md:p-6 bg-white">
@@ -246,14 +253,12 @@
         <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl">
             <h3 class="text-lg font-black mb-1 uppercase text-slate-800">Ganti Password</h3>
             <p class="text-[10px] text-slate-400 mb-6 uppercase font-bold tracking-wider">Keamanan Akun</p>
-            
             <div class="space-y-3">
                 <input type="password" id="oldPass" placeholder="Password Saat Ini" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm transition-all">
                 <div class="border-t border-slate-100 my-2 pt-2 text-[9px] font-bold text-slate-300 uppercase">Password Baru</div>
                 <input type="password" id="newPass" placeholder="Password Baru" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm transition-all">
                 <input type="password" id="confirmPass" placeholder="Konfirmasi Password Baru" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm transition-all">
             </div>
-
             <div class="grid grid-cols-2 gap-3 mt-6">
                 <button onclick="closeChangePassModal()" class="bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-[10px]">Batal</button>
                 <button onclick="saveNewPassword()" class="bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px]">Simpan Perubahan</button>
@@ -322,13 +327,10 @@
             setInterval(updateCountdown, 1000);
         });
 
-        // --- FUNGSI AUTH ---
         function handleLogin() {
             const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('passInput').value;
             if (!user) return alert("Pilih Nama Anda!");
-            
-            // Cek password dari config lokal
             if (pass !== config[user].pass) return alert("Password Salah!");
             
             userSess = { name: user, ...config[user] };
@@ -341,38 +343,6 @@
             location.reload();
         }
 
-        // --- FUNGSI GANTI PASSWORD ---
-        function openChangePassModal() {
-            document.getElementById('changePassModal').classList.remove('hidden');
-        }
-
-        function closeChangePassModal() {
-            document.getElementById('changePassModal').classList.add('hidden');
-            document.getElementById('oldPass').value = '';
-            document.getElementById('newPass').value = '';
-            document.getElementById('confirmPass').value = '';
-        }
-
-        function saveNewPassword() {
-            const oldP = document.getElementById('oldPass').value;
-            const newP = document.getElementById('newPass').value;
-            const confP = document.getElementById('confirmPass').value;
-
-            if (oldP !== userSess.pass) return alert("Password lama salah!");
-            if (newP.length < 3) return alert("Password baru minimal 3 karakter!");
-            if (newP !== confP) return alert("Konfirmasi password tidak cocok!");
-
-            // Update di session saat ini
-            userSess.pass = newP;
-            // Update di config memory (agar login ulang tanpa refresh tetap ingat)
-            config[userSess.name].pass = newP;
-            
-            localStorage.setItem('dinarpus_session', JSON.stringify(userSess));
-            alert("Password berhasil diperbarui!");
-            closeChangePassModal();
-        }
-
-        // --- FUNGSI DASHBOARD ---
         function renderDashboard() {
             document.getElementById('loginPage').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
@@ -382,7 +352,6 @@
             if (userSess.role === 'Pegawai') {
                 document.getElementById('formPegawai').classList.remove('hidden');
             }
-            
             document.getElementById('inTgl').value = new Date().toISOString().split('T')[0];
 
             dbRef.on('value', snap => {
@@ -409,6 +378,41 @@
             }
         }
 
+        // --- FUNGSI EXPORT EXCEL ---
+        function exportToExcel() {
+            const fStart = document.getElementById('filterStart').value;
+            const fEnd = document.getElementById('filterEnd').value;
+            
+            let dataExport = db.filter(i => {
+                const rM = (userSess.role === 'Pegawai') ? (i.user === userSess.name) :
+                           (userSess.role === 'Verifikator') ? (i.verifBy === userSess.name) : true;
+                const dM = (fStart && fEnd) ? (i.tgl >= fStart && i.tgl <= fEnd) : true;
+                return rM && dM;
+            }).sort((a,b) => a.tgl.localeCompare(b.tgl));
+
+            if (dataExport.length === 0) return alert("Tidak ada data untuk diexport!");
+
+            const rows = dataExport.map((i, index) => ({
+                "NO": index + 1,
+                "NAMA PEGAWAI": i.user,
+                "TANGGAL": i.tgl,
+                "URAIAN KEGIATAN": i.uraian,
+                "VOLUME": i.jml,
+                "SATUAN": i.satuan,
+                "STATUS": i.status === 'INPUT' ? 'PROSES' : (i.status === 'VERIFIED' ? 'TERVERIFIKASI' : 'SELESAI')
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan_Kinerja");
+
+            // Atur lebar kolom agar rapi
+            worksheet['!cols'] = [{wch:5}, {wch:15}, {wch:12}, {wch:50}, {wch:8}, {wch:10}, {wch:15}];
+
+            const fileName = `Laporan_${userSess.name}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+        }
+
         // --- RENDER TABEL ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
@@ -419,7 +423,7 @@
 
             let dataFilter = db.filter(i => {
                 const rM = (userSess.role === 'Pegawai') ? (i.user === userSess.name) :
-                           (userSess.role === 'Verifikator') ? (i.verifBy === userSess.name) : true;
+                            (userSess.role === 'Verifikator') ? (i.verifBy === userSess.name) : true;
                 const dM = (fStart && fEnd) ? (i.tgl >= fStart && i.tgl <= fEnd) : true;
                 return rM && dM;
             }).sort((a,b) => b.id - a.id);
@@ -457,6 +461,7 @@
                         <td class="p-4 text-center no-print">${aksi}</td>
                     </tr>`;
 
+                // Update info tanda tangan di area cetak (untuk baris terakhir yang ditemukan)
                 if(i.verifBy && config[i.verifBy]) {
                     document.getElementById('printNameVerif').innerText = config[i.verifBy].full;
                     document.getElementById('printNipVerif').innerText = config[i.verifBy].nip;
@@ -471,19 +476,18 @@
             document.getElementById('statFinished').innerText = c.finish;
         }
 
-        // --- CRUD OPERATIONS ---
+        // --- OPERASI CRUD DAN LAINNYA ---
         async function submitLaporan() {
             const uraian = document.getElementById('inUraian').value;
             if(!uraian) return alert("Uraian wajib diisi!");
-
             document.getElementById('loadingOverlay').style.display = 'flex';
+            
             const editId = document.getElementById('editId').value;
             const file = document.getElementById('inBerkas').files[0];
 
             const saveProcess = (imgBase64 = "") => {
                 const id = editId || Date.now();
                 const existing = editId ? db.find(x => x.id == editId) : null;
-                
                 const data = {
                     id: id,
                     user: userSess.name,
@@ -497,7 +501,6 @@
                     signP: existing ? (existing.signP || '') : '',
                     berkas: imgBase64 || (existing ? existing.berkas : '')
                 };
-
                 dbRef.child(id).set(data).then(() => {
                     document.getElementById('loadingOverlay').style.display = 'none';
                     resetForm();
@@ -506,25 +509,25 @@
 
             if (file) {
                 const reader = new FileReader();
+                reader.onload = e => saveProcess(e.target.result);
                 reader.readAsDataURL(file);
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let w = img.width, h = img.height, max = 800;
-                        if (w > h) { if (w > max) { h *= max / w; w = max; } } 
-                        else { if (h > max) { w *= max / h; h = max; } }
-                        canvas.width = w; canvas.height = h;
-                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                        saveProcess(canvas.toDataURL('image/jpeg', 0.6));
-                    };
-                };
-            } else { saveProcess(); }
+            } else {
+                saveProcess();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = '';
+            document.getElementById('inUraian').value = '';
+            document.getElementById('inJml').value = '';
+            document.getElementById('inSatuan').value = '';
+            document.getElementById('inBerkas').value = '';
+            document.getElementById('formTitle').innerText = "Tambah Kegiatan Baru";
+            document.getElementById('btnSimpan').innerText = "Simpan Laporan";
         }
 
         function hapusData(id) {
-            if(confirm("Hapus data ini?")) dbRef.child(id).remove();
+            if(confirm('Hapus laporan ini?')) dbRef.child(id).remove();
         }
 
         function editData(id) {
@@ -534,45 +537,53 @@
             document.getElementById('inUraian').value = item.uraian;
             document.getElementById('inJml').value = item.jml;
             document.getElementById('inSatuan').value = item.satuan;
-            document.getElementById('formTitle').innerText = "Edit Laporan";
-            window.scrollTo({top: 0, behavior: 'smooth'});
+            document.getElementById('formTitle').innerText = "Edit Kegiatan";
+            document.getElementById('btnSimpan').innerText = "Update Laporan";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function resetForm() {
-            document.getElementById('editId').value = "";
-            document.getElementById('inUraian').value = "";
-            document.getElementById('inJml').value = "";
-            document.getElementById('inSatuan').value = "";
-            document.getElementById('inBerkas').value = "";
-            document.getElementById('formTitle').innerText = "Tambah Kegiatan Baru";
-            document.getElementById('inTgl').value = new Date().toISOString().split('T')[0];
-        }
-
-        // --- SIGNATURE PAD ---
+        // --- FUNGSI TANDA TANGAN ---
         function openSign(id) {
             activeId = id;
             document.getElementById('signModal').classList.remove('hidden');
             signPad.clear();
         }
-
-        function closeSignModal() {
-            document.getElementById('signModal').classList.add('hidden');
+        function closeSignModal() { document.getElementById('signModal').classList.add('hidden'); }
+        function clearSign() { signPad.clear(); }
+        function saveSign() {
+            if(signPad.isEmpty()) return alert("Tanda tangan dulu!");
+            const base64 = signPad.toDataURL();
+            const item = db.find(x => x.id == activeId);
+            
+            if(userSess.role === 'Verifikator') {
+                dbRef.child(activeId).update({ status: 'VERIFIED', signV: base64 });
+            } else if(userSess.role === 'Pimpinan') {
+                dbRef.child(activeId).update({ status: 'FINISHED', signP: base64 });
+            }
+            closeSignModal();
         }
 
-        function clearSign() { signPad.clear(); }
-
-        function saveSign() {
-            if (signPad.isEmpty()) return alert("Tanda tangan masih kosong!");
-            const img = signPad.toDataURL();
-            const updateData = userSess.role === 'Verifikator' ? 
-                { status: 'VERIFIED', signV: img } : 
-                { status: 'FINISHED', signP: img };
-
-            dbRef.child(activeId).update(updateData).then(() => {
-                closeSignModal();
-            });
+        // --- GANTI PASSWORD ---
+        function openChangePassModal() { document.getElementById('changePassModal').classList.remove('hidden'); }
+        function closeChangePassModal() { 
+            document.getElementById('changePassModal').classList.add('hidden');
+            document.getElementById('oldPass').value = '';
+            document.getElementById('newPass').value = '';
+            document.getElementById('confirmPass').value = '';
+        }
+        function saveNewPassword() {
+            const oldP = document.getElementById('oldPass').value;
+            const newP = document.getElementById('newPass').value;
+            const confP = document.getElementById('confirmPass').value;
+            if (oldP !== userSess.pass) return alert("Password lama salah!");
+            if (newP.length < 3) return alert("Password baru minimal 3 karakter!");
+            if (newP !== confP) return alert("Konfirmasi password tidak cocok!");
+            userSess.pass = newP;
+            config[userSess.name].pass = newP;
+            localStorage.setItem('dinarpus_session', JSON.stringify(userSess));
+            alert("Password berhasil diperbarui!");
+            closeChangePassModal();
         }
     </script>
 </body>
 </html>
-
