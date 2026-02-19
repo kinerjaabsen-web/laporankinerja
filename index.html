@@ -3,66 +3,588 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Sedang Maintenance - Dinarpus</title>
+    <title>DINARPUS - Sistem Laporan Kinerja</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        
-        .floating {
-            animation: floating 3s ease-in-out infinite;
+
+        @media print {
+            @page { size: portrait; margin: 1cm; }
+            .no-print { display: none !important; }
+            .col-bukti { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; padding: 0; margin: 0; font-size: 10pt; }
+            .card-container { border: none !important; box-shadow: none !important; padding: 0 !important; }
+            table { width: 100% !important; border: 1px solid #000 !important; table-layout: fixed; border-collapse: collapse; }
+            th { background-color: #f3f4f6 !important; color: black !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; padding: 8px; }
+            td { border: 1px solid #000 !important; vertical-align: top; word-wrap: break-word; line-height: 1.4; padding: 8px; }
+            .col-no { width: 35px; text-align: center; }
+            .col-nama { width: 100px; }
+            .col-tgl { width: 85px; text-align: center; }
+            .col-vol { width: 70px; text-align: center; }
+            .col-status { width: 100px; text-align: center; }
+            .signature-wrapper { display: flex !important; flex-direction: row !important; justify-content: space-between !important; margin-top: 30px; page-break-inside: avoid; }
+            .signature-box { width: 45% !important; text-align: center; }
         }
-        @keyframes floating {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+
+        .print-only { display: none; }
+        .whitespace-pre-wrap { white-space: pre-wrap; }
+        .blink { animation: blinker 1.5s linear infinite; }
+        @keyframes blinker { 50% { opacity: 0.3; } }
+
+        #loadingOverlay {
+            display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); 
+            backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; flex-direction: column;
         }
+        .spinner { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-50 min-h-screen text-slate-900">
 
-    <div class="max-w-md w-full text-center">
-        <div class="mb-8 floating">
-            <div class="w-24 h-24 bg-blue-100 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
-                <span class="text-5xl">??</span>
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <p class="mt-4 text-white font-black text-xs tracking-widest uppercase">Sedang Memproses...</p>
+    </div>
+
+    <div id="loginPage" class="flex items-center justify-center min-h-screen px-4 no-print bg-gradient-to-br from-blue-900 to-slate-900">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center">
+            <div class="mb-6">
+                <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><span class="text-3xl">📝</span></div>
+                <h1 class="text-2xl font-black text-slate-800 leading-tight uppercase">E-Laporan<br><span class="text-blue-600">PPPK PW</span></h1>
             </div>
-        </div>
-
-        <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-slate-200 border border-slate-100">
-            <span class="px-4 py-1.5 bg-amber-100 text-amber-700 rounded-full text-[10px] font-black uppercase tracking-widest">
-                System Maintenance
-            </span>
-            
-            <h1 class="text-2xl md:text-3xl font-black text-slate-800 mt-6 mb-4 leading-tight uppercase italic">
-                Mohon Maaf,<br>
-                <span class="text-blue-600">Aplikasi Ini Sekarang Beralih Ke Versi 2.0 !</span>
-            </h1>
-            
-            <p class="text-slate-500 text-sm leading-relaxed mb-8">
-                Kami sedang melakukan proses <b>Migrasi Data</b> untuk beralih ke sistem yang lebih <b>Fast & Responsive</b> demi kenyamanan pelaporan Anda.</b> Gunakan Username : NIPPPK Anda dan Kata Sandi :123456
-            </p>
-
-            <div class="space-y-4">
-                <a href="https://laporankinerja.infinityfree.me/" 
-                   class="block w-full bg-blue-600 hover:bg-slate-900 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-blue-200 transform hover:-translate-y-1 active:scale-95 uppercase text-xs tracking-widest">
-                    Ayo, Klik dan Beralih Ke Sistem Baru Sekarang 
-                </a>
-                
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                    DINARPUS PPPK PW 2026
-                </p>
-            </div>
-        </div>
-
-        <div class="mt-8">
-            <div class="flex justify-center gap-2 items-center text-slate-400">
-                <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span class="text-[10px] font-bold uppercase tracking-widest">Tim IT SAE DEVELOPMENT sedang bekerja</span>
+            <div class="space-y-3">
+                <select id="userSelect" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 font-semibold text-sm transition-all">
+                    <option value="">-- Pilih Nama Anda --</option>
+                    <option value="Saeful">Saeful</option><option value="Fuad">Fuad</option><option value="Lusi">Lusi</option>
+                    <option value="Dadi">Dadi</option><option value="Widhi">Widhi</option><option value="Eni">Eni</option>
+                    <option value="Della">Della</option><option value="Arya">Arya</option><option value="Ragil">Ragil Aji</option>
+                    <option value="Parsono">Parsono</option><option value="Agus">Agus</option><option value="Mijil">Mijil</option>
+                    <option value="Dirin">Dirin</option><option value="Toro">Toro</option><option value="Ana">Ana</option>
+                    <option value="Mei">Mei</option><option value="Okta">Okta</option><option value="Bella">Bella</option>
+                    <option value="Arfan">Arfan</option><option value="Didid">Didid</option><option value="Lia">Lia</option>
+                    <option value="Riono">Riono</option><option value="Hari">Hari</option><option value="Novi">Novi</option>
+                    <option value="Murti">Murtikowati (Verifikator)</option>
+                    <option value="hasan">Hasan Nurudin (Verifikator)</option>
+                    <option value="Marliati">Marliati (Verifikator)</option>
+                    <option value="Kepala">Endi Astono (Pimpinan)</option>
+                </select>
+                <input type="password" id="passInput" placeholder="Password" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm transition-all">
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-lg uppercase tracking-wider text-sm">Masuk Sistem</button>
             </div>
         </div>
     </div>
 
+    <div id="dashboard" class="hidden">
+        <nav class="bg-white border-b p-4 no-print sticky top-0 z-50 shadow-sm">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="bg-blue-600 text-white p-1.5 rounded-lg text-xs font-black uppercase">DP</span>
+                    <h1 class="font-black text-slate-800 tracking-tighter uppercase italic">Dinarpus PPPK PW<span class="text-blue-600">2026</span></h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden md:block text-right">
+                        <p id="displayUser" class="text-xs font-black text-slate-800 uppercase"></p>
+                        <p id="displayRole" class="text-[9px] text-blue-500 font-bold uppercase tracking-widest"></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openChangePassModal()" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded-xl transition text-[10px] font-black uppercase">Ganti Password</button>
+                        <button onclick="handleLogout()" class="bg-slate-100 hover:bg-red-50 text-red-500 px-3 py-2 rounded-xl transition text-[10px] font-black uppercase">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+            <div id="statsPanel" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 no-print">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Total Laporan</p>
+                    <p id="statTotal" class="text-2xl font-black text-slate-800">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Menunggu</p>
+                    <p id="statPending" class="text-2xl font-black text-orange-500">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Disetujui</p>
+                    <p id="statVerified" class="text-2xl font-black text-emerald-500">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Selesai</p>
+                    <p id="statFinished" class="text-2xl font-black text-blue-600">0</p>
+                </div>
+            </div>
+
+            <div id="formPegawai" class="hidden bg-white p-6 rounded-3xl shadow-sm mb-8 no-print border-2 border-blue-50">
+                <div id="inputActive">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="formTitle" class="font-black text-slate-800 uppercase text-sm tracking-widest italic flex items-center gap-2">
+                            <span class="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></span> Tambah Kegiatan Baru
+                        </h2>
+                        <div class="text-right">
+                            <span id="countdownDisplay" class="font-black text-blue-600 text-lg tabular-nums">00:00:00</span>
+                            <p class="text-[9px] font-bold text-slate-400 uppercase">Sisa Waktu Input</p>
+                        </div>
+                    </div>
+                    <input type="hidden" id="editId">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                        <div class="md:col-span-3">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Tanggal</label>
+                            <input type="date" id="inTgl" class="w-full border-2 border-slate-50 p-3 rounded-2xl text-sm mt-1 focus:border-blue-400 outline-none transition-all">
+                        </div>
+                        <div class="md:col-span-9">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Uraian Tugas / Kegiatan</label>
+                            <textarea id="inUraian" rows="1" class="w-full border-2 border-slate-50 p-3 rounded-2xl text-sm mt-1 focus:border-blue-400 outline-none transition-all" placeholder="Apa yang Anda kerjakan hari ini?"></textarea>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Volume & Satuan</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="number" id="inJml" placeholder="Jml" class="border-2 border-slate-50 p-3 rounded-2xl text-sm w-20 outline-none focus:border-blue-400">
+                                <input type="text" id="inSatuan" placeholder="Satuan" class="border-2 border-slate-50 p-3 rounded-2xl text-sm w-full outline-none focus:border-blue-400">
+                            </div>
+                        </div>
+                        <div class="md:col-span-5">
+                            <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Lampiran Bukti (Foto)</label>
+                            <input type="file" id="inBerkas" accept="image/*" class="w-full text-xs mt-1 border-2 border-dashed border-slate-200 p-2.5 rounded-2xl bg-slate-50 file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                        </div>
+                        <div class="md:col-span-4 flex items-end">
+                            <button id="btnSimpan" onclick="submitLaporan()" class="w-full bg-slate-900 text-white py-3.5 rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl hover:bg-blue-600 transition-all transform hover:-translate-y-1">Simpan Laporan</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="inputLocked" class="hidden text-center py-8">
+                    <span class="text-4xl mb-4 block">🔒</span>
+                    <h2 class="text-red-500 font-black text-lg uppercase italic tracking-tighter">Sistem Terkunci Otomatis</h2>
+                    <p class="text-slate-400 text-xs mt-1">Batas waktu penginputan adalah pukul 16:15 WIB.</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden card-container">
+                <div class="no-print p-6 border-b flex flex-wrap gap-4 items-end justify-between bg-slate-50/50">
+                    <div class="flex flex-wrap gap-3 items-end">
+                        <div class="min-w-[140px]">
+                            <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Dari</label>
+                            <input type="date" id="filterStart" class="w-full border-2 border-white p-2 rounded-xl text-xs outline-none focus:border-blue-400">
+                        </div>
+                        <div class="min-w-[140px]">
+                            <label class="text-[10px] font-black text-slate-400 uppercase ml-1">Sampai</label>
+                            <input type="date" id="filterEnd" class="w-full border-2 border-white p-2 rounded-xl text-xs outline-none focus:border-blue-400">
+                        </div>
+                        <button onclick="renderTable()" class="bg-slate-900 hover:bg-blue-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md">Tampilkan</button>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                        <button onclick="exportToExcel()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md flex items-center gap-2">
+                            <span>📊</span> Export Excel
+                        </button>
+                        <button onclick="window.print()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all shadow-md flex items-center gap-2">
+                            <span>🖨️</span> Cetak PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="print-only text-center border-b-[3px] border-black pb-4 mb-6">
+                    <h1 class="text-lg font-black uppercase leading-tight">Laporan Kinerja Harian PPPK Paruh Waktu</h1>
+                    <p class="text-sm font-bold uppercase mt-1">Dinas Kearsipan dan Perpustakaan Kabupaten Purbalingga</p>
+                </div>
+
+                <div class="overflow-x-auto p-0 md:p-6 bg-white">
+                    <table class="w-full text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900 text-white text-[10px] uppercase tracking-widest border">
+                                <th class="p-4 border-slate-700 text-center col-no">No</th>
+                                <th class="p-4 border-slate-700 text-left col-nama">Pegawai</th>
+                                <th class="p-4 border-slate-700 text-center col-tgl">Tanggal</th>
+                                <th class="p-4 border-slate-700 text-left col-uraian">Uraian Kegiatan</th>
+                                <th class="p-4 border-slate-700 text-center col-vol">Vol</th>
+                                <th class="p-4 border-slate-700 text-center col-bukti">Bukti</th>
+                                <th class="p-4 border-slate-700 text-center col-status">Status</th>
+                                <th class="p-4 border-slate-700 text-center no-print">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="text-slate-700"></tbody>
+                    </table>
+                </div>
+
+                <div class="print-only signature-wrapper px-10">
+                    <div class="signature-box">
+                        <p class="font-bold uppercase mb-2">Verifikator,</p>
+                        <div class="h-20 flex items-center justify-center">
+                            <img id="printSignVerif" class="h-full">
+                        </div>
+                        <p id="printNameVerif" class="font-black underline uppercase text-[11px] mt-2"></p>
+                        <p id="printNipVerif" class="text-[10px] font-bold"></p>
+                    </div>
+                    <div class="signature-box">
+                        <p class="font-bold uppercase mb-2">Kepala Dinas,</p>
+                        <div class="h-20 flex items-center justify-center">
+                            <img id="printSignPimpinan" class="h-full">
+                        </div>
+                        <p class="font-black underline uppercase text-[11px] mt-2">ENDI ASTONO, S.Sos</p>
+                        <p class="text-[10px] font-bold uppercase">NIP. 196709191990031010</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="signModal" class="fixed inset-0 bg-slate-900/90 hidden z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-md text-center shadow-2xl">
+            <h3 class="text-lg font-black mb-1 uppercase text-slate-800">Tanda Tangan</h3>
+            <div class="bg-slate-50 rounded-2xl p-2 border-2 border-dashed border-slate-200 mt-4">
+                <canvas id="signature-pad-canvas" width="350" height="200" class="w-full cursor-crosshair"></canvas>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button onclick="clearSign()" class="bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-[10px]">Ulangi</button>
+                <button onclick="saveSign()" class="bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px]">Simpan</button>
+            </div>
+            <button onclick="closeSignModal()" class="mt-4 text-red-400 text-[10px] font-black uppercase">Batal</button>
+        </div>
+    </div>
+
+    <div id="changePassModal" class="fixed inset-0 bg-slate-900/90 hidden z-[60] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm text-center shadow-2xl">
+            <h3 class="text-lg font-black mb-1 uppercase text-slate-800">Ganti Password</h3>
+            <p class="text-[10px] text-slate-400 mb-6 uppercase font-bold tracking-wider">Keamanan Akun</p>
+            <div class="space-y-3">
+                <input type="password" id="oldPass" placeholder="Password Saat Ini" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm transition-all">
+                <div class="border-t border-slate-100 my-2 pt-2 text-[9px] font-bold text-slate-300 uppercase">Password Baru</div>
+                <input type="password" id="newPass" placeholder="Password Baru" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm transition-all">
+                <input type="password" id="confirmPass" placeholder="Konfirmasi Password Baru" class="w-full p-3 border-2 border-slate-100 rounded-xl outline-none focus:border-blue-500 text-sm transition-all">
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button onclick="closeChangePassModal()" class="bg-slate-100 text-slate-600 py-3 rounded-xl font-black uppercase text-[10px]">Batal</button>
+                <button onclick="saveNewPassword()" class="bg-blue-600 text-white py-3 rounded-xl font-black uppercase text-[10px]">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURASI FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAi6r89ZlhtZ325z3ypGQhrKUdq-mHXNCs",
+            authDomain: "laporankinerja-fa09e.firebaseapp.com",
+            databaseURL: "https://laporankinerja-fa09e-default-rtdb.firebaseio.com",
+            projectId: "laporankinerja-fa09e",
+            storageBucket: "laporankinerja-fa09e.firebasestorage.app",
+            messagingSenderId: "1034616765062",
+            appId: "1:1034616765062:web:ad66fa6c34dfadcec52f07"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const dbRef = firebase.database().ref('dinarpus_db');
+
+        // --- KONFIGURASI PENGGUNA ---
+        const config = {
+            'Murti': { role: 'Verifikator', pass: '12345', full: 'MURTIKOWATI, S.Sos', nip: 'NIP. 197210151998032006' },
+            'Marliati': { role: 'Verifikator', pass: '12345', full: 'MARLIATI, S.Sos', nip: 'NIP. 196803131994032010' },
+            'hasan': { role: 'Verifikator', pass: '12345', full: 'Hasan Nurudin, SE', nip: 'NIP. 197105091998031010' },
+            'Kepala': { role: 'Pimpinan', pass: '123456' },
+            'Saeful': { role: 'Pegawai', verif: 'Murti', pass: 's123' },
+            'Fuad': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Lusi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Dadi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Widhi': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Eni': { role: 'Pegawai', verif: 'Murti', pass: '123' },
+            'Arya': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Della': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Novi': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Parsono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Riono': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Hari': { role: 'Pegawai', verif: 'Marliati', pass: '123' },
+            'Agus': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Mijil': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Dirin': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Toro': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Ana': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Mei': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Okta': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Bella': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Arfan': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Didid': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Lia': { role: 'Pegawai', verif: 'hasan', pass: '123' },
+            'Ragil': { role: 'Pegawai', verif: 'Marliati', pass: '123' }
+        };
+
+        let db = [], userSess = null, signPad = null, activeId = null;
+
+        // --- INISIALISASI ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('signature-pad-canvas');
+            signPad = new SignaturePad(canvas);
+            
+            const saved = localStorage.getItem('dinarpus_session');
+            if (saved) { 
+                userSess = JSON.parse(saved); 
+                renderDashboard(); 
+            }
+            setInterval(updateCountdown, 1000);
+        });
+
+        function handleLogin() {
+            const user = document.getElementById('userSelect').value;
+            const pass = document.getElementById('passInput').value;
+            if (!user) return alert("Pilih Nama Anda!");
+            if (pass !== config[user].pass) return alert("Password Salah!");
+            
+            userSess = { name: user, ...config[user] };
+            localStorage.setItem('dinarpus_session', JSON.stringify(userSess));
+            renderDashboard();
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('dinarpus_session');
+            location.reload();
+        }
+
+        function renderDashboard() {
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('displayUser').innerText = userSess.name;
+            document.getElementById('displayRole').innerText = userSess.role;
+
+            if (userSess.role === 'Pegawai') {
+                document.getElementById('formPegawai').classList.remove('hidden');
+            }
+            document.getElementById('inTgl').value = new Date().toISOString().split('T')[0];
+
+            dbRef.on('value', snap => {
+                db = snap.val() ? Object.values(snap.val()) : [];
+                renderTable();
+            });
+        }
+
+        function updateCountdown() {
+            if (!userSess) return;
+            const target = new Date(); target.setHours(16, 15, 0, 0);
+            const diff = target - new Date();
+            const display = document.getElementById('countdownDisplay');
+            
+            if (diff <= 0) {
+                display.innerText = "CLOSED";
+                if (userSess.role === 'Pegawai') {
+                    document.getElementById('inputActive').classList.add('hidden');
+                    document.getElementById('inputLocked').classList.remove('hidden');
+                }
+            } else {
+                const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
+                display.innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+        }
+
+        // --- FUNGSI EXPORT EXCEL ---
+        function exportToExcel() {
+            const fStart = document.getElementById('filterStart').value;
+            const fEnd = document.getElementById('filterEnd').value;
+            
+            let dataExport = db.filter(i => {
+                const rM = (userSess.role === 'Pegawai') ? (i.user === userSess.name) :
+                           (userSess.role === 'Verifikator') ? (i.verifBy === userSess.name) : true;
+                const dM = (fStart && fEnd) ? (i.tgl >= fStart && i.tgl <= fEnd) : true;
+                return rM && dM;
+            }).sort((a,b) => a.tgl.localeCompare(b.tgl));
+
+            if (dataExport.length === 0) return alert("Tidak ada data untuk diexport!");
+
+            const rows = dataExport.map((i, index) => ({
+                "NO": index + 1,
+                "NAMA PEGAWAI": i.user,
+                "TANGGAL": i.tgl,
+                "URAIAN KEGIATAN": i.uraian,
+                "VOLUME": i.jml,
+                "SATUAN": i.satuan,
+                "STATUS": i.status === 'INPUT' ? 'PROSES' : (i.status === 'VERIFIED' ? 'TERVERIFIKASI' : 'SELESAI')
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(rows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan_Kinerja");
+
+            // Atur lebar kolom agar rapi
+            worksheet['!cols'] = [{wch:5}, {wch:15}, {wch:12}, {wch:50}, {wch:8}, {wch:10}, {wch:15}];
+
+            const fileName = `Laporan_${userSess.name}_${new Date().toISOString().split('T')[0]}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+        }
+
+        // --- RENDER TABEL ---
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const fStart = document.getElementById('filterStart').value;
+            const fEnd = document.getElementById('filterEnd').value;
+            tbody.innerHTML = '';
+            let c = { total:0, pending:0, verif:0, finish:0 };
+
+            let dataFilter = db.filter(i => {
+                const rM = (userSess.role === 'Pegawai') ? (i.user === userSess.name) :
+                            (userSess.role === 'Verifikator') ? (i.verifBy === userSess.name) : true;
+                const dM = (fStart && fEnd) ? (i.tgl >= fStart && i.tgl <= fEnd) : true;
+                return rM && dM;
+            }).sort((a,b) => b.id - a.id);
+
+            dataFilter.forEach((i, idx) => {
+                c.total++;
+                if(i.status === 'INPUT') c.pending++;
+                else if(i.status === 'VERIFIED') c.verif++;
+                else c.finish++;
+
+                let statusHtml = '';
+                if(i.status === 'INPUT') statusHtml = '<span class="px-2 py-1 bg-orange-100 text-orange-600 rounded-lg font-black text-[9px] blink">PROSES</span>';
+                else if(i.status === 'VERIFIED') statusHtml = `<img src="${i.signV}" class="h-10 mx-auto">`;
+                else statusHtml = `<img src="${i.signP}" class="h-10 mx-auto">`;
+
+                let aksi = '-';
+                if (userSess.role === 'Pegawai' && i.status === 'INPUT') {
+                    aksi = `<button onclick="editData(${i.id})" class="text-blue-600 font-bold text-[9px] mr-2">EDIT</button>
+                            <button onclick="hapusData(${i.id})" class="text-red-400 font-bold text-[9px]">HAPUS</button>`;
+                } else if (userSess.role === 'Verifikator' && i.status === 'INPUT') {
+                    aksi = `<button onclick="openSign(${i.id})" class="bg-blue-600 text-white px-3 py-1 rounded text-[9px]">VERIF</button>`;
+                } else if (userSess.role === 'Pimpinan' && i.status === 'VERIFIED') {
+                    aksi = `<button onclick="openSign(${i.id})" class="bg-emerald-500 text-white px-3 py-1 rounded text-[9px]">TTD</button>`;
+                }
+
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-4 text-center col-no">${idx+1}</td>
+                        <td class="p-4 font-bold col-nama">${i.user}</td>
+                        <td class="p-4 text-center col-tgl">${i.tgl}</td>
+                        <td class="p-4 whitespace-pre-wrap col-uraian">${i.uraian}</td>
+                        <td class="p-4 text-center col-vol">${i.jml} ${i.satuan}</td>
+                        <td class="p-4 text-center col-bukti">${i.berkas ? `<a href="${i.berkas}" target="_blank" class="text-blue-500 underline text-[9px]">Lihat</a>` : '-'}</td>
+                        <td class="p-4 text-center col-status">${statusHtml}</td>
+                        <td class="p-4 text-center no-print">${aksi}</td>
+                    </tr>`;
+
+                // Update info tanda tangan di area cetak (untuk baris terakhir yang ditemukan)
+                if(i.verifBy && config[i.verifBy]) {
+                    document.getElementById('printNameVerif').innerText = config[i.verifBy].full;
+                    document.getElementById('printNipVerif').innerText = config[i.verifBy].nip;
+                    if(i.signV) document.getElementById('printSignVerif').src = i.signV;
+                }
+                if(i.signP) document.getElementById('printSignPimpinan').src = i.signP;
+            });
+
+            document.getElementById('statTotal').innerText = c.total;
+            document.getElementById('statPending').innerText = c.pending;
+            document.getElementById('statVerified').innerText = c.verif;
+            document.getElementById('statFinished').innerText = c.finish;
+        }
+
+        // --- OPERASI CRUD DAN LAINNYA ---
+        async function submitLaporan() {
+            const uraian = document.getElementById('inUraian').value;
+            if(!uraian) return alert("Uraian wajib diisi!");
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            const editId = document.getElementById('editId').value;
+            const file = document.getElementById('inBerkas').files[0];
+
+            const saveProcess = (imgBase64 = "") => {
+                const id = editId || Date.now();
+                const existing = editId ? db.find(x => x.id == editId) : null;
+                const data = {
+                    id: id,
+                    user: userSess.name,
+                    verifBy: userSess.verif || (existing ? existing.verifBy : ''),
+                    tgl: document.getElementById('inTgl').value,
+                    uraian: uraian,
+                    jml: document.getElementById('inJml').value,
+                    satuan: document.getElementById('inSatuan').value,
+                    status: existing ? existing.status : 'INPUT',
+                    signV: existing ? (existing.signV || '') : '',
+                    signP: existing ? (existing.signP || '') : '',
+                    berkas: imgBase64 || (existing ? existing.berkas : '')
+                };
+                dbRef.child(id).set(data).then(() => {
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    resetForm();
+                });
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => saveProcess(e.target.result);
+                reader.readAsDataURL(file);
+            } else {
+                saveProcess();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('editId').value = '';
+            document.getElementById('inUraian').value = '';
+            document.getElementById('inJml').value = '';
+            document.getElementById('inSatuan').value = '';
+            document.getElementById('inBerkas').value = '';
+            document.getElementById('formTitle').innerText = "Tambah Kegiatan Baru";
+            document.getElementById('btnSimpan').innerText = "Simpan Laporan";
+        }
+
+        function hapusData(id) {
+            if(confirm('Hapus laporan ini?')) dbRef.child(id).remove();
+        }
+
+        function editData(id) {
+            const item = db.find(x => x.id == id);
+            document.getElementById('editId').value = item.id;
+            document.getElementById('inTgl').value = item.tgl;
+            document.getElementById('inUraian').value = item.uraian;
+            document.getElementById('inJml').value = item.jml;
+            document.getElementById('inSatuan').value = item.satuan;
+            document.getElementById('formTitle').innerText = "Edit Kegiatan";
+            document.getElementById('btnSimpan').innerText = "Update Laporan";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- FUNGSI TANDA TANGAN ---
+        function openSign(id) {
+            activeId = id;
+            document.getElementById('signModal').classList.remove('hidden');
+            signPad.clear();
+        }
+        function closeSignModal() { document.getElementById('signModal').classList.add('hidden'); }
+        function clearSign() { signPad.clear(); }
+        function saveSign() {
+            if(signPad.isEmpty()) return alert("Tanda tangan dulu!");
+            const base64 = signPad.toDataURL();
+            const item = db.find(x => x.id == activeId);
+            
+            if(userSess.role === 'Verifikator') {
+                dbRef.child(activeId).update({ status: 'VERIFIED', signV: base64 });
+            } else if(userSess.role === 'Pimpinan') {
+                dbRef.child(activeId).update({ status: 'FINISHED', signP: base64 });
+            }
+            closeSignModal();
+        }
+
+        // --- GANTI PASSWORD ---
+        function openChangePassModal() { document.getElementById('changePassModal').classList.remove('hidden'); }
+        function closeChangePassModal() { 
+            document.getElementById('changePassModal').classList.add('hidden');
+            document.getElementById('oldPass').value = '';
+            document.getElementById('newPass').value = '';
+            document.getElementById('confirmPass').value = '';
+        }
+        function saveNewPassword() {
+            const oldP = document.getElementById('oldPass').value;
+            const newP = document.getElementById('newPass').value;
+            const confP = document.getElementById('confirmPass').value;
+            if (oldP !== userSess.pass) return alert("Password lama salah!");
+            if (newP.length < 3) return alert("Password baru minimal 3 karakter!");
+            if (newP !== confP) return alert("Konfirmasi password tidak cocok!");
+            userSess.pass = newP;
+            config[userSess.name].pass = newP;
+            localStorage.setItem('dinarpus_session', JSON.stringify(userSess));
+            alert("Password berhasil diperbarui!");
+            closeChangePassModal();
+        }
+    </script>
 </body>
 </html>
-
-
 
